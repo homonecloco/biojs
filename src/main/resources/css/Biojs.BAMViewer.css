@@ -1,0 +1,21 @@
+/* Use this class to apply all the style settings you need for your component
+   In this case, will be applied following settings for the main div container 
+*/
+
+div.BAMViewer {
+   font-size: 36px,
+   text-align: center,
+   vertical-align:middle,
+   display: table-cell,
+   width: 597px,
+   height: 300px
+}
+
+/* Any other element inside your component, should be styled by trough
+   filtering up desired children of main container. 
+   For example, lets filter all the span tags inside MyHelloWorld: 
+*/
+
+div.BAMViewer span {
+   /* Your style settings here */   
+}
