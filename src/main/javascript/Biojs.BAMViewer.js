@@ -12,6 +12,8 @@
  * @requires <a href='http://code.jquery.com/jquery-1.6.4.js'>jQuery Core 1.6.4</a>
  * @dependency <script language="JavaScript" type="text/javascript" src="../biojs/dependencies/jquery/jquery-1.6.4.min.js"></script>
  * 
+ * requieres <a >
+ * 
  * @param {Object} options An object with the options for BAMViewer component.
  *    
  * @option {string} target 
@@ -153,6 +155,77 @@ Biojs.BAMViewer = Biojs.extend (
     if ( size != undefined ){
       jQuery("#"+this.opt.target).css('font-size', size);
     }
+  },
+  
+
+  /**
+  * Parses the sam file.
+  * @parm{string} [sam] The content of the file to parse
+  * @return{string} js object representing the array of SAM lines as objects
+  *
+  *
+  */
+
+  parse_sam: function(sam){
+
+  var lines=tsv.split("\n"); 
+  var result = [];
+
+  for(var i=0;i<lines.length;i++){
+    obj = self.parse_sam_line(lines[i]);
+    result.push(obj);
+  }
+  
+  return result; //JavaScript object
+  //return JSON.stringify(result); //JSON
+  },
+  
+  /** 
+  * Parses a line from the SAM specification as follows:  
+  *  1 QNAME String
+  *  2 FLAG Int
+  *  3 RNAME String
+  *  4 POS Int
+  *  5 MAPQ Int
+  *  6 CIGAR String
+  * 7 RNEXT String
+  * 8 PNEXT Int
+  * 9 TLEN Int
+  * 10 SEQ String
+  * 11 QUAL String
+  * The optional tags are added as elements in the object, and if the type is integer (i) of float (f)  they are parsed. The rest of the
+  * types are treated as string. 
+  *@param {string} [sam_line] The line to parse
+  * 
+  */
+  parse_sam_line: function(sam_line){
+    var obj = {};
+    var currentline = sam_line.split("\t");
+    obj.qname = currentline[0] ;
+    obj.flag  = parseInt(currentline[1]) ;
+    obj.rname = currentline[2] ;
+    obj.pos   = parseInt(currentline[3]) ;
+    obj.mapq  = parseInt(currentline[4]) ;
+    obj.cigar = currentline[5] ;
+    obj.rnext = currentline[6] ;
+    obj.pnext = parseInt(currentline[7]);
+    obj.tlen  = parseInt(currentline[8]) ;
+    obj.seq   = currentline[9] ;
+    obj.qual  = currentline[10] ;
+
+    for(var j=12;j < currentline.length;j++){
+      var tag = sam_line[k].split(":")
+     
+      if (tag[1] == "i"){
+       obj[tag[0]] = parseInt(tag[2]);
+      }else if (tag[1 == "f"]){
+        obj[tag[0]] = parseFloat(tag[2]);
+      }
+      else{ 
+        obj[tag[0]] = tag[2];
+      }
+    }
+    return obj;
   },
   
   _addSelectionTrigger: function() {
