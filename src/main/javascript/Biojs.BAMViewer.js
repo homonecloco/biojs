@@ -227,6 +227,29 @@ Biojs.BAMViewer = Biojs.extend (
     }
     return obj;
   },
+
+  /**
+  * Loads a region and stores it in the cache 
+  */
+  load_region: function(chr,start, end){
+    jQuery.ajax({
+                type: "GET",
+                url: self.opt.dataSet,
+                dataType: "text",
+                success: function (data) {
+                    correct = true
+                    if(correct)
+                      //TODO: call the parser and store the data in an indexed way. 
+                    } else {
+                        alert("Unknown format detected")
+                    }
+
+                },
+                error: function (qXHR, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+  },
   
   _addSelectionTrigger: function() {
 
