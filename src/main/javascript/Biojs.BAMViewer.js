@@ -53,8 +53,7 @@ Biojs.BAMViewer = Biojs.extend (
     // In JavaScript ÒthisÓ always refers to the ÒownerÓ of the function we're executing (http://www.quirksmode.org/js/this.html)
     // Let's preserve the reference to 'this' through the variable self. In this way, we can invoke/execute 
     // our component instead of the object where 'this' is being invoked/executed.
-    alert ("In constructor");
-    //alert(JSON.stringify(options));
+  
     var self = this;
     
     // For practical use, create an object with the main DIV container 
@@ -84,7 +83,7 @@ Biojs.BAMViewer = Biojs.extend (
     });
 
     // Set the content
-    text = 'Hello Worlfdsd!';
+    text = 'Loading...';
 
     for( i=0; i< text.length; i++ ) {
       this._container.append('<span>' + text[i] + '</span>');
@@ -97,13 +96,10 @@ Biojs.BAMViewer = Biojs.extend (
     this._addSimpleClickTrigger();
 
     //Here starts the real SAM stuff. 
-    var cr = new Biojs.BAMRegion(options.entry, options.start, options.end);
-    alert("Region created");
-    alert(JSON.stringify(cr));
+    var cr = new _BAMRegion(options.entry, options.start, options.end);
+
     this.current_region = cr;
     this.reference = options.reference;
-    alert("To_string from region:");
-    alert(cr.toString);
 
     this.load_region(cr);
   },
@@ -190,11 +186,11 @@ Biojs.BAMViewer = Biojs.extend (
 
   parse_sam: function(sam){
 
-  var lines=tsv.split("\n"); 
+  var lines=sam.split("\n"); 
   var result = [];
 
   for(var i=0;i<lines.length;i++){
-    obj = self.parse_sam_line(lines[i]);
+    obj = this.parse_sam_line(lines[i]);
     result.push(obj);
   }
   
@@ -251,7 +247,7 @@ Biojs.BAMViewer = Biojs.extend (
         @is_duplicate          = @flag & 0x0400 > 0*/
 
     for(var j=12;j < currentline.length;j++){
-      var tag = sam_line[k].split(":")
+      var tag = sam_line[j].split(":")
      
       if (tag[1] == "i"){
        obj[tag[0]] = parseInt(tag[2]);
@@ -271,7 +267,7 @@ Biojs.BAMViewer = Biojs.extend (
   load_region: function(region){
     //alert(self.dataSet);
 
-    alert(this.dataSet);
+    //alert(this.dataSet);
     reference = this.reference;
     //reg = region.entry + ":" + region.start + "-" + region.end;
     reg = region.toString;
@@ -282,11 +278,17 @@ Biojs.BAMViewer = Biojs.extend (
                 url: this.dataSet,
                 data: { region: reg, ref: this.reference } ,
                 dataType: "text",
+                container: this,
                 success: function (data) {
                     correct = true
                     if(correct){
                       //TODO: call the parser and store the data in an indexed way.
-                      alert(data); 
+                      container = jQuery("#"+this.container.opt.target);
+                      reads = this.container.parse_sam(data);
+                      container.empty();
+                      container.append(JSON.stringify(reads));
+                      //this._container.empty();
+                      //this._container.append(data); 
                     } else {
                         alert("Unknown format detected")
                     }
@@ -379,23 +381,17 @@ Biojs.BAMViewer = Biojs.extend (
   
 });
 
-Biojs.BAMRegion = function BAMRegion(entry, start, end) {
+_BAMRegion = function _BAMRegion(entry, start, end) {
     this.entry = entry;
     this.start = start;
     this.end = end;
-    alert("in constructor region");
-    alert(JSON.stringify(this));
-    //return this;
+    this.toString = function() {
+        return  entry + ":" + start  + "-" + end;
+    };
 } ;
 
-Biojs.BAMRegion.prototype.toString = function(){
-        alert("In Region.toString")
-        alert(this.entry);
-        ret = this.entry + ":" + this.start  + "-" + this.end;
-        alert(ret);
-        return ret;
-      }
-;
+//_BAMRegion.prototype.toString = f
+//;
 
 
 

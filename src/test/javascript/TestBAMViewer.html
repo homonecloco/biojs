@@ -6,13 +6,13 @@
 	<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-1.10.2.js"></script>
 	<script language="JavaScript" type="text/javascript">
 		window.onload = function() {
-			alert("loading");
+
 			
 			var instance = new Biojs.BAMViewer({
  			    target : "YourOwnDivId",
      			selectionBackgroundColor : '#99FF00',
-     			dataSet: "../biojs/data/BAMViewerDataSet.txt", 
-     			reference: "../biojs/data/test_chr.fasta",
+     			dataSet: "../../main/resources/data/BAMViewerDataSet.txt", 
+     			reference: "../../main/resources/data/test_chr.fasta",
      			entry  : "chr_1",
      			start  : 1, 
      			end    : 500
