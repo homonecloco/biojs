@@ -37,7 +37,12 @@
  * @example 
  * var instance = new Biojs.BAMViewer({
  *    target : "YourOwnDivId",
- *    selectionBackgroundColor : '#99FF00'
+ *    selectionBackgroundColor : '#99FF00',
+ *    dataSet: "../biojs/data/BAMViewerDataSet.txt", 
+ *    reference: "../biojs/data/test_chr.fasta",
+ *    entry  : "chr_1",
+ *    start  : 1, 
+ *    end    : 500
  * });  
  * 
  */
@@ -48,12 +53,14 @@ Biojs.BAMViewer = Biojs.extend (
     // In JavaScript ÒthisÓ always refers to the ÒownerÓ of the function we're executing (http://www.quirksmode.org/js/this.html)
     // Let's preserve the reference to 'this' through the variable self. In this way, we can invoke/execute 
     // our component instead of the object where 'this' is being invoked/executed.
+    alert ("In constructor");
+    //alert(JSON.stringify(options));
     var self = this;
     
     // For practical use, create an object with the main DIV container 
     // to be used in all of the code of our component
     this._container = jQuery("#"+self.opt.target);
-    
+    this.dataSet = options.dataSet
     // Apply options values
     this._container.css({
       'font-family': self.opt.fontFamily, // this is one example of the use of self instead of this
@@ -77,7 +84,7 @@ Biojs.BAMViewer = Biojs.extend (
     });
 
     // Set the content
-    text = 'Hello World!';
+    text = 'Hello Worlfdsd!';
 
     for( i=0; i< text.length; i++ ) {
       this._container.append('<span>' + text[i] + '</span>');
@@ -88,6 +95,17 @@ Biojs.BAMViewer = Biojs.extend (
     
     // Internal method to set the onClick event 
     this._addSimpleClickTrigger();
+
+    //Here starts the real SAM stuff. 
+    var cr = new Biojs.BAMRegion(options.entry, options.start, options.end);
+    alert("Region created");
+    alert(JSON.stringify(cr));
+    this.current_region = cr;
+    this.reference = options.reference;
+    alert("To_string from region:");
+    alert(cr.toString);
+
+    this.load_region(cr);
   },
 
   /**
@@ -95,12 +113,16 @@ Biojs.BAMViewer = Biojs.extend (
    *  @name Biojs.BAMViewer-opt
    */
   opt: {
-     target: "YourOwnDivId",
-     fontFamily: '"Andale mono", courier, monospace',
-     fontColor: "white",
-     backgroundColor: "#7BBFE9",
-     selectionFontColor: "black",
-     selectionBackgroundColor: "yellow"
+      target: "YourOwnDivId",
+      fontFamily: '"Andale mono", courier, monospace',
+      fontColor: "white",
+      backgroundColor: "#7BBFE9",
+      selectionFontColor: "black",
+      selectionBackgroundColor: "yellow",
+      dataSet: "../../main/resources/data/BAMViwerDataSet.tsv", 
+      entry  : "chr_1",
+      start  : 1, 
+      end    : 500
   },
   
   /**
@@ -199,19 +221,34 @@ Biojs.BAMViewer = Biojs.extend (
   * 
   */
   parse_sam_line: function(sam_line){
-    var obj = {};
     var currentline = sam_line.split("\t");
-    obj.qname = currentline[0] ;
-    obj.flag  = parseInt(currentline[1]) ;
-    obj.rname = currentline[2] ;
-    obj.pos   = parseInt(currentline[3]) ;
-    obj.mapq  = parseInt(currentline[4]) ;
-    obj.cigar = currentline[5] ;
-    obj.rnext = currentline[6] ;
-    obj.pnext = parseInt(currentline[7]);
-    obj.tlen  = parseInt(currentline[8]) ;
-    obj.seq   = currentline[9] ;
-    obj.qual  = currentline[10] ;
+    var obj = {
+      qname : currentline[0] ,
+      flags : parseInt(currentline[1]),
+      rname : currentline[2] ,
+      pos   : parseInt(currentline[3]) ,
+      mapq  : parseInt(currentline[4]) ,
+      cigar : currentline[5] ,
+      rnext : currentline[6] ,
+      pnext : parseInt(currentline[7]),
+      tlen  : parseInt(currentline[8]) ,
+      seq   : currentline[9] ,
+      qual  : currentline[10] ,
+      has_flag : function (f){return flags & f > 0 }
+    };
+
+
+    /*        @is_paired  = (@flag & 0x0001) > 0
+        @is_mapped             = @flag & 0x0002 > 0
+        @query_unmapped        = @flag & 0x0004 > 0
+        @mate_unmapped         = @flag & 0x0008 > 0
+        @query_strand          = !(@flag & 0x0010 > 0)
+        @mate_strand           = !(@flag & 0x0020 > 0)
+        @first_in_pair         = @flag & 0x0040 > 0
+        @second_in_pair        = @flag & 0x0080 > 0
+        @primary               = !(@flag & 0x0100 > 0)
+        @failed_quality        = @flag & 0x0200 > 0
+        @is_duplicate          = @flag & 0x0400 > 0*/
 
     for(var j=12;j < currentline.length;j++){
       var tag = sam_line[k].split(":")
@@ -231,15 +268,25 @@ Biojs.BAMViewer = Biojs.extend (
   /**
   * Loads a region and stores it in the cache 
   */
-  load_region: function(chr,start, end){
+  load_region: function(region){
+    //alert(self.dataSet);
+
+    alert(this.dataSet);
+    reference = this.reference;
+    //reg = region.entry + ":" + region.start + "-" + region.end;
+    reg = region.toString;
+
+  //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
     jQuery.ajax({
                 type: "GET",
-                url: self.opt.dataSet,
+                url: this.dataSet,
+                data: { region: reg, ref: this.reference } ,
                 dataType: "text",
                 success: function (data) {
                     correct = true
-                    if(correct)
-                      //TODO: call the parser and store the data in an indexed way. 
+                    if(correct){
+                      //TODO: call the parser and store the data in an indexed way.
+                      alert(data); 
                     } else {
                         alert("Unknown format detected")
                     }
@@ -328,11 +375,27 @@ Biojs.BAMViewer = Biojs.extend (
         // We're ready to raise the event onClick of our component
         self.raiseEvent('onClick', evtObject);
       });
-  }
+  }, 
   
 });
 
+Biojs.BAMRegion = function BAMRegion(entry, start, end) {
+    this.entry = entry;
+    this.start = start;
+    this.end = end;
+    alert("in constructor region");
+    alert(JSON.stringify(this));
+    //return this;
+} ;
 
+Biojs.BAMRegion.prototype.toString = function(){
+        alert("In Region.toString")
+        alert(this.entry);
+        ret = this.entry + ":" + this.start  + "-" + this.end;
+        alert(ret);
+        return ret;
+      }
+;
 
 
 
