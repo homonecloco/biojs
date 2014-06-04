@@ -3,24 +3,53 @@
 	<title>Biojs.MyHelloWorld test</title>
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMViewer.js"></script>
+		<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMRegionList.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-1.10.2.js"></script>
 	<script language="JavaScript" type="text/javascript">
 		window.onload = function() {
 
 			
 			var instance = new Biojs.BAMViewer({
- 			    target : "YourOwnDivId",
+ 			    target : "bam_viewer_1",
      			selectionBackgroundColor : '#99FF00',
      			dataSet: "../../main/resources/data/BAMViewerDataSet.txt", 
      			reference: "../../main/resources/data/test_chr.fasta",
+     			bam: "BAMViewerDataSet.txt",
      			entry  : "chr_1",
      			start  : 1, 
      			end    : 500
+  			}); 
+
+  			var region_list = new Biojs.BAMRegionList({
+ 			    target : "bam_list",
+     			selectionBackgroundColor : '#00FF00',
+     			reference: "../../main/resources/data/BAMViewerChrList.txt",
+     			dataSet: "../../main/resources/data/BAMViewerChrList.txt" //This will be optional in the future.  
   			});  
 		};
 	</script>
 	</head>
 	<body>
-		<div id="YourOwnDivId" ></div>
+		<div id="container" style="width:1000px">
+
+		<div id="header" style="background-color:#FFA500;">
+		<h1 style="margin-bottom:0;">BioJS SAMViewer mini-test</h1></div>
+
+		<div id="bam_list" style="background-color:#FFD700;height:600px;width:200px;float:left;">
+HERE GOES THE LIST</div>
+
+<div id="wig_viewer_1" style="height:200px;width:800px;float:left;">
+BIGWIG WILL GO HERE</div>
+<div id="sequence" style="height:20px;width:400px;float:left">
+	The sequence will go here
+</div>
+<div id="bam_viewer_1" style="background-color:#EEEEEE;height:200px;width:800px;float:left;">
+BAM goes here</div>
+
+<div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
+BioJS BAMViewer.</div>
+
+</div>
+	
 	</body>
 </html>

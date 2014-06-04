@@ -59,7 +59,7 @@ Biojs.BAMViewer = Biojs.extend (
     // For practical use, create an object with the main DIV container 
     // to be used in all of the code of our component
     this._container = jQuery("#"+self.opt.target);
-    this.dataSet = options.dataSet
+ 
     // Apply options values
     this._container.css({
       'font-family': self.opt.fontFamily, // this is one example of the use of self instead of this
@@ -85,9 +85,9 @@ Biojs.BAMViewer = Biojs.extend (
     // Set the content
     text = 'Loading...';
 
-    for( i=0; i< text.length; i++ ) {
-      this._container.append('<span>' + text[i] + '</span>');
-    }    
+    
+    this._container.append('<span>' + text + '</span>');
+        
 
     // Internal method to initialize the event of select 'Hello'  
     this._addSelectionTrigger();
@@ -96,10 +96,13 @@ Biojs.BAMViewer = Biojs.extend (
     this._addSimpleClickTrigger();
 
     //Here starts the real SAM stuff. 
-    var cr = new _BAMRegion(options.entry, options.start, options.end);
 
-    this.current_region = cr;
+    this.dataSet = options.dataSet
+
     this.reference = options.reference;
+    var cr = new _BAMRegion(options.entry, options.start, options.end);
+    this.current_region = cr;
+
 
     this.load_region(cr);
   },
@@ -126,39 +129,23 @@ Biojs.BAMViewer = Biojs.extend (
    * @name Biojs.BAMViewer-eventTypes
    */
   eventTypes : [
-  /**
-   * @name Biojs.BAMViewer#onClick
+ 
+   /**
+   * @name Biojs.BAMViewer#onRegionChanged
    * @event
    * @param {function} actionPerformed A function which receives an {@link Biojs.Event} object as argument.
    * @eventData {Object} source The component which did triggered the event.
    * @eventData {string} type The name of the event.
-   * @eventData {int} selected Selected character.
-   * @example 
-   * instance.onClick(
-   *    function( objEvent ) {
-   *       alert("The character " + objEvent.selected + " was clicked.");
-   *    }
-   * ); 
-   * 
-   * */
-   "onClick",
-   
-  /**
-   * @name Biojs.BAMViewer#onHelloSelected
-   * @event
-   * @param {function} actionPerformed A function which receives an {@link Biojs.Event} object as argument.
-   * @eventData {Object} source The component which did triggered the event.
-   * @eventData {string} type The name of the event.
-   * @eventData {int} textSelected Selected text, will be 'Hello' obviously.
+   * @eventData {string} the new region (chr_1:1-400)
    * @example 
    * instance.onHelloSelected(
    *    function( objEvent ) {
-   *       alert("The word " + objEvent.textSelected + " was selected.");
+   *       alert("The word " + objEvent.region + " was selected.");
    *    }
    * ); 
    * 
    * */
-     "onHelloSelected"      
+     "onRegionChanged"    
   ], 
   
   /**
@@ -287,8 +274,6 @@ Biojs.BAMViewer = Biojs.extend (
                       reads = this.container.parse_sam(data);
                       container.empty();
                       container.append(JSON.stringify(reads));
-                      //this._container.empty();
-                      //this._container.append(data); 
                     } else {
                         alert("Unknown format detected")
                     }
