@@ -83,28 +83,21 @@ Biojs.BAMViewer = Biojs.extend (
     });
 
     // Set the content
-    text = 'Loading...';
-
     
-    this._container.append('<span>' + text + '</span>');
+    this._container.append('<div>Please select a region</div>');
         
-
-    // Internal method to initialize the event of select 'Hello'  
-    this._addSelectionTrigger();
-    
-    // Internal method to set the onClick event 
-    this._addSimpleClickTrigger();
 
     //Here starts the real SAM stuff. 
 
     this.dataSet = options.dataSet
 
     this.reference = options.reference;
-    var cr = new _BAMRegion(options.entry, options.start, options.end);
-    this.current_region = cr;
-
-
-    this.load_region(cr);
+  
+    if(options.entry){
+      var cr = new _BAMRegion(options.entry, options.start, options.end);
+      this.current_region = cr;
+      this.load_region(cr);
+    }
   },
 
   /**
@@ -162,6 +155,14 @@ Biojs.BAMViewer = Biojs.extend (
     }
   },
   
+
+  parse_region: function(reg) {
+      //TODO: validate 
+      ent=reg.split(":");
+      indeces=ent[1].split("-")
+      var reg = new _BAMRegion(ent[0], indeces[0], indeces[1]);
+      return reg;
+  },
 
   /**
   * Parses the sam file.
@@ -257,7 +258,9 @@ Biojs.BAMViewer = Biojs.extend (
     //alert(this.dataSet);
     reference = this.reference;
     //reg = region.entry + ":" + region.start + "-" + region.end;
+    //TODO: Force the region to be up to a maximum size. 
     reg = region.toString;
+
 
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
     jQuery.ajax({
@@ -275,15 +278,20 @@ Biojs.BAMViewer = Biojs.extend (
                       container.empty();
                       container.append(JSON.stringify(reads));
                     } else {
-                        alert("Unknown format detected")
+                        alert("Unknown format detected");
                     }
 
                 },
                 error: function (qXHR, textStatus, errorThrown) {
-                    alert(textStatus);
+                    alert(" Error loading the  SAM File! \n" + textStatus + "\n" + errorThrown + "\n" + qXHR );
                 }
             });
   },
+  setRegion: function(region){
+    reg = this.parse_region(region);
+    this.load_region(reg);
+  }
+  ,
   
   _addSelectionTrigger: function() {
 

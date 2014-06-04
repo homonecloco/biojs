@@ -71,11 +71,10 @@ Biojs.BAMRegionList = Biojs.extend (
 
 	  this._container.empty()
 	  this._container.append('<span>Loading...</span>');
-	  
+	  this._container.BAMRegionList = self
 	  this.load_list();
 
-	  // Internal method to set the onClick event 
-	  this._addSimpleClickTrigger();
+
   },
 
   /**
@@ -123,28 +122,17 @@ Biojs.BAMRegionList = Biojs.extend (
   	return   data.split("\n"); 
   },
   
-  _addSimpleClickTrigger: function () {
-	  
-	  var self = this;
-	  
-	  // Add the click event to each character in the content
-	  this._container.find('span')
-	  	.click( function(e) {
-	  		// A letter was clicked!
-	  		// Let's discover which one was it
-	  		// TIP: e.target contains the clicked DOM node
-	  		var selected = jQuery(e.target).text();
-	  		
-	  		// Create an event object 
-	  		var evtObject = { "selected": selected };
-	  		
-	  		// We're ready to raise the event onClick of our component
-	  		self.raiseEvent('onClick', evtObject);
-	  	});
+
+  add_region_callback: function(component){
+  	this.callbacks.push(component)
   },
 
-  add_component_to_callback: function(component){
-  	this.callbacks.push(component)
+  _region_click: function(region){
+  	arrayLength= this.callbacks.length;
+  	for (var i = 0; i < arrayLength; i++) {
+  		this.callbacks[i].setRegion(region);
+  	}
+  	//alert(region);
   },
 
   load_list: function(){
@@ -162,18 +150,31 @@ Biojs.BAMRegionList = Biojs.extend (
                 container: this,
                 success: function (data) {
                     correct = true
-                    reads = this.container.parse_list(data);
-                    if(reads){
-                      container = jQuery("#"+this.container.opt.target);
-                      container.empty();
+                    regions = this.container.parse_list(data);
+                    if(regions){
+                      cont = jQuery("#"+this.container.opt.target);
+                      cont.empty();
                       
-                      var arrayLength = reads.length;
+                      var arrayLength = regions.length;
 
 						for (var i = 0; i < arrayLength; i++) {
-							
-							container.append("<span onclick=alert(\"" + reads[i]  +"\") >" + reads[i] + "</span><br>");
+							var element = document.createElement("div");
+							element.region = regions[i] 
+							var newContent = document.createTextNode(regions[i]); 
+							element.id = this.container.opt.target + "_div_" + regions[i];
+  							element.bam_list = this.container
+  							element.appendChild(newContent);
+							element.onclick = function(evnt){
+								target=evnt.currentTarget;
+								list_node=target.parentNode;
+								target.bam_list._region_click(target.region);
+//								alert(target.region);
+							};
+
+							cont.append(element);
+							//container.append("<span onclick=alert(\"" + reads[i]  +"\") >" + reads[i] + "</span><br>");
 						}
-						this.container._addSimpleClickTrigger()
+						//this.container._addSimpleClickTrigger()
                     } else {
                         alert("Unknown format detected")
                     }
