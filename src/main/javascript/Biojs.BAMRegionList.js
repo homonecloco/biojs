@@ -85,9 +85,9 @@ Biojs.BAMRegionList = Biojs.extend (
      target: "YourOwnDivId",
      fontFamily: '"Andale mono", courier, monospace',
      fontColor: "black",
-     backgroundColor: "#7BBFE9",
-     selectionFontColor: "gray",
-     selectionBackgroundColor: "white"
+     backgroundColor: "white",
+     selectionFontColor: "blak",
+     selectionBackgroundColor: "gray"
   },
   
   /**
@@ -156,7 +156,6 @@ Biojs.BAMRegionList = Biojs.extend (
                       cont.empty();
                       
                       var arrayLength = regions.length;
-
 						for (var i = 0; i < arrayLength; i++) {
 							var element = document.createElement("div");
 							element.region = regions[i] 
@@ -167,14 +166,17 @@ Biojs.BAMRegionList = Biojs.extend (
 							element.onclick = function(evnt){
 								target=evnt.currentTarget;
 								list_node=target.parentNode;
-								target.bam_list._region_click(target.region);
-//								alert(target.region);
+								local_container = target.bam_list
+								if ('undefined' !== typeof list_node.selected_node) {
+									list_node.selected_node.style.backgroundColor=local_container.opt.backgroundColor;
+								}
+								list_node.selected_node=target;
+								local_container._region_click(target.region);
+								target.style.backgroundColor = local_container.opt.selectionBackgroundColor;
 							};
 
 							cont.append(element);
-							//container.append("<span onclick=alert(\"" + reads[i]  +"\") >" + reads[i] + "</span><br>");
 						}
-						//this.container._addSimpleClickTrigger()
                     } else {
                         alert("Unknown format detected")
                     }

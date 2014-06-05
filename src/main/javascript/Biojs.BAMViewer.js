@@ -46,33 +46,34 @@
  * });  
  * 
  */
-Biojs.BAMViewer = Biojs.extend (
-/** @lends Biojs.BAMViewer# */
-{
-  constructor: function (options) {
+ Biojs.BAMViewer = Biojs.extend (
+  /** @lends Biojs.BAMViewer# */
+  {
+    constructor: function (options) {
     // In JavaScript ÒthisÓ always refers to the ÒownerÓ of the function we're executing (http://www.quirksmode.org/js/this.html)
     // Let's preserve the reference to 'this' through the variable self. In this way, we can invoke/execute 
     // our component instead of the object where 'this' is being invoked/executed.
-  
+
     var self = this;
     
     // For practical use, create an object with the main DIV container 
     // to be used in all of the code of our component
     this._container = jQuery("#"+self.opt.target);
- 
+
     // Apply options values
     this._container.css({
       'font-family': self.opt.fontFamily, // this is one example of the use of self instead of this
       'background-color': self.opt.backgroundColor,
       'color': self.opt.fontColor,
-      'font-size': '36px',
+      'font-size': self.opt.fontSize,
       'text-align': 'center',
-      'vertical-align':'middle',
+      'vertical-align':'top',
       'display': 'table-cell',
       'width': '597px',
-      'height': '300px'     
+      'height': '300px' , 
+      'overflow': 'auto'    
     });
-  
+
     // Disable text selection and
     // Change the selection mouse pointer  
     // from text to hand.
@@ -85,14 +86,17 @@ Biojs.BAMViewer = Biojs.extend (
     // Set the content
     
     this._container.append('<div>Please select a region</div>');
-        
+
 
     //Here starts the real SAM stuff. 
 
     this.dataSet = options.dataSet
 
     this.reference = options.reference;
-  
+
+    //An array with all the alignments. Each position represents a position in the chromosome. 
+    this.alignments = {}
+
     if(options.entry){
       var cr = new _BAMRegion(options.entry, options.start, options.end);
       this.current_region = cr;
@@ -104,25 +108,28 @@ Biojs.BAMViewer = Biojs.extend (
    *  Default values for the options
    *  @name Biojs.BAMViewer-opt
    */
-  opt: {
-      target: "YourOwnDivId",
-      fontFamily: '"Andale mono", courier, monospace',
-      fontColor: "white",
-      backgroundColor: "#7BBFE9",
-      selectionFontColor: "black",
-      selectionBackgroundColor: "yellow",
-      dataSet: "../../main/resources/data/BAMViwerDataSet.tsv", 
-      entry  : "chr_1",
-      start  : 1, 
-      end    : 500
+   opt: {
+    target: "YourOwnDivId",
+    fontFamily: '"Andale mono", courier, monospace',
+    fontColor: "white",
+    backgroundColor: "#7BBFE9",
+    selectionFontColor: "black",
+    selectionBackgroundColor: "yellow",
+    dataSet: "../../main/resources/data/BAMViwerDataSet.tsv", 
+    fontSize: "10px",
+    width: "597px",
+    height: "300px",
+    base_width: "15px"
+
+
   },
   
   /**
    * Array containing the supported event names
    * @name Biojs.BAMViewer-eventTypes
    */
-  eventTypes : [
- 
+   eventTypes : [
+
    /**
    * @name Biojs.BAMViewer#onRegionChanged
    * @event
@@ -138,9 +145,9 @@ Biojs.BAMViewer = Biojs.extend (
    * ); 
    * 
    * */
-     "onRegionChanged"    
-  ], 
-  
+   "onRegionChanged"    
+   ], 
+
   /**
    * Change the font size. Do nothing it no value is provided.
    * 
@@ -149,7 +156,7 @@ Biojs.BAMViewer = Biojs.extend (
    * @example 
    * instance.setSize("72px");
    */
-  setSize: function(size) {
+   setSize: function(size) {
     if ( size != undefined ){
       jQuery("#"+this.opt.target).css('font-size', size);
     }
@@ -162,7 +169,7 @@ Biojs.BAMViewer = Biojs.extend (
       indeces=ent[1].split("-")
       var reg = new _BAMRegion(ent[0], indeces[0], indeces[1]);
       return reg;
-  },
+    },
 
   /**
   * Parses the sam file.
@@ -174,18 +181,18 @@ Biojs.BAMViewer = Biojs.extend (
 
   parse_sam: function(sam){
 
-  var lines=sam.split("\n"); 
-  var result = [];
+    var lines=sam.split("\n"); 
+    var result = [];
 
-  for(var i=0;i<lines.length;i++){
-    obj = this.parse_sam_line(lines[i]);
-    result.push(obj);
-  }
-  
+    for(var i=0;i<lines.length;i++){
+      obj = this.parse_sam_line(lines[i]);
+      result.push(obj);
+    }
+
   return result; //JavaScript object
   //return JSON.stringify(result); //JSON
-  },
-  
+   },
+
   /** 
   * Parses a line from the SAM specification as follows:  
   *  1 QNAME String
@@ -206,6 +213,9 @@ Biojs.BAMViewer = Biojs.extend (
   */
   parse_sam_line: function(sam_line){
     var currentline = sam_line.split("\t");
+
+    var cigar = currentline[5] 
+
     var obj = {
       qname : currentline[0] ,
       flags : parseInt(currentline[1]),
@@ -218,11 +228,12 @@ Biojs.BAMViewer = Biojs.extend (
       tlen  : parseInt(currentline[8]) ,
       seq   : currentline[9] ,
       qual  : currentline[10] ,
+      len   : 100, //TODO: change this to use the cigar.  
       has_flag : function (f){return flags & f > 0 }
     };
 
 
-    /*        @is_paired  = (@flag & 0x0001) > 0
+    /* @is_paired  = (@flag & 0x0001) > 0
         @is_mapped             = @flag & 0x0002 > 0
         @query_unmapped        = @flag & 0x0004 > 0
         @mate_unmapped         = @flag & 0x0008 > 0
@@ -234,20 +245,77 @@ Biojs.BAMViewer = Biojs.extend (
         @failed_quality        = @flag & 0x0200 > 0
         @is_duplicate          = @flag & 0x0400 > 0*/
 
-    for(var j=12;j < currentline.length;j++){
-      var tag = sam_line[j].split(":")
-     
-      if (tag[1] == "i"){
-       obj[tag[0]] = parseInt(tag[2]);
-      }else if (tag[1 == "f"]){
-        obj[tag[0]] = parseFloat(tag[2]);
+        for(var j=12;j < currentline.length;j++){
+          var tag = sam_line[j].split(":")
+
+          if (tag[1] == "i"){
+           obj[tag[0]] = parseInt(tag[2]);
+         }else if (tag[1 == "f"]){
+          obj[tag[0]] = parseFloat(tag[2]);
+        }
+        else{ 
+          obj[tag[0]] = tag[2];
+        }
       }
-      else{ 
-        obj[tag[0]] = tag[2];
+      return obj;
+    },
+
+    render_visible: function(){
+      var region = this.current_region;
+      var start = region.start - this.opt.flanking_cache;
+      var canvas = this._render_div;
+      if(start < 0){
+        start = 1;
       }
-    }
-    return obj;
-  },
+      //alert(JSON.stringify(this.alignments));
+      for(i = start; i < region.end + this.opt.flanking_cache ; i++){
+
+        if("undefined" !== typeof this.alignments[i]){
+         // alert(JSON.stringify(this.alignments[i]) + " i:" + i);
+          var current_alignments = this.alignments[i];
+          //alert(JSON.stringify(current_alignments) + " i:" + i);
+          for (var j in current_alignments) {
+            aln = current_alignments[j];
+            
+            if("undefined" === typeof aln.div){ //We dont render it again if it already exists
+      
+              var new_div = document.createElement("div");
+             // new_div.setAttribute("style","width:500px");
+              new_div.style.width = this.opt.base_width * aln.len + "px"; 
+              new_div.style.height = this.opt.fontSize 
+              new_div.style.float = "top";
+              new_div.style.position = "absolute";
+              new_div.style.left = ( i - 1) * this.opt.base_width + "px"; 
+              new_div.style.backgroundColor = "white"; 
+              
+              aln.div = new_div;
+
+              //alert(JSON.stringify(aln.div)); 
+              canvas.appendChild(new_div);
+            }
+            
+          }
+        }
+      }
+    },
+
+    add_alignments: function(alignments){
+      var als = this.alignments;
+      var added = 0;
+      for(var i = 0; i < alignments.length; i++){
+        var aln = alignments[i];
+        if("undefined" === typeof als[aln.pos]){
+          als[aln.pos] = {}; 
+        }
+        var current_alignments = als[aln.pos];
+        if("undefined" ===  typeof als[aln.pos][aln.qname]){
+          added ++;
+          als[aln.pos][aln.qname] = aln;
+          //alert(JSON.stringify( current_alignments[aln.qname] ));
+        }
+      }
+        //alert(JSON.stringify( this.alignments ));
+    },
 
   /**
   * Loads a region and stores it in the cache 
@@ -263,124 +331,61 @@ Biojs.BAMViewer = Biojs.extend (
 
 
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
-    jQuery.ajax({
-                type: "GET",
-                url: this.dataSet,
-                data: { region: reg, ref: this.reference } ,
-                dataType: "text",
-                container: this,
-                success: function (data) {
-                    correct = true
-                    if(correct){
-                      //TODO: call the parser and store the data in an indexed way.
-                      container = jQuery("#"+this.container.opt.target);
-                      reads = this.container.parse_sam(data);
-                      container.empty();
-                      container.append(JSON.stringify(reads));
-                    } else {
-                        alert("Unknown format detected");
-                    }
-
-                },
-                error: function (qXHR, textStatus, errorThrown) {
-                    alert(" Error loading the  SAM File! \n" + textStatus + "\n" + errorThrown + "\n" + qXHR );
-                }
-            });
-  },
-  setRegion: function(region){
-    reg = this.parse_region(region);
-    this.load_region(reg);
-  }
-  ,
-  
-  _addSelectionTrigger: function() {
-
-    var self = this;
-    var isMouseDown = false;
-    
-    // Create the CSS class called selected to change both background and color 
-
-    jQuery('<style> .selected { '+
-        'background-color:' + self.opt.selectionBackgroundColor + ';' +
-        'color:' + self.opt.selectionFontColor +'; }</style>'
-        ).appendTo('head');
-    
-    //
-    // Add the click event to each character in the content
-    // But remember, we must to figure out when 'Hello' is selected only
-    this._container.find('span')
-      .mousedown(function() {
-        
-        // Turn on the flag 
-      isMouseDown = true;
-      
-      // A new selection is starting
-      // Reset all by removing the CSS "selected" class if already applied
-      self._container.children('span').removeClass('selected')
-      
-      // Apply the class for this span/character
-      // NOTE: "this" refers to the internal object 'span'
-      // NOT to the component's instance
-      jQuery(this).addClass('selected');
-        
-      }).mouseover(function() {
-        // Check if the mouse is being dragged  
-      if (isMouseDown) {
-        jQuery(this).addClass('selected');
-      } 
-    })
-    .mouseup(function() {
-      
-      /// Turn off the flag 
-      isMouseDown = false;
-      
-      var textSelected = '';
-      
-      // Get the entire selected word
-      self._container.children('span.selected')
-        .each(function(){
-          textSelected += jQuery(this).text();
-        });
-      
-      // Since requirements, only "Hello" word should be selected 
-      // to raise the event
-      if (textSelected == 'Hello') {
-        self.raiseEvent('onHelloSelected', {
-          textSelected : textSelected
-        })
+  jQuery.ajax({
+    type: "GET",
+    url: this.dataSet,
+    data: { region: reg, ref: this.reference } ,
+    dataType: "text",
+    container: this,
+    success: function (data) {
+      correct = true
+      reads = this.container.parse_sam(data);
+      if(reads.length > 0){
+        this.container.add_alignments(reads);
+        this.container.render_visible();
+      } else {
+        alert("Unknown format detected");
       }
-    });
-  },
-  
-  _addSimpleClickTrigger: function () {
-    
-    var self = this;
-    
-    // Add the click event to each character in the content
-    this._container.find('span')
-      .click( function(e) {
-        // A letter was clicked!
-        // Let's discover which one was it
-        // TIP: e.target contains the clicked DOM node
-        var selected = jQuery(e.target).text();
-        
-        // Create an event object 
-        var evtObject = { "selected": selected };
-        
-        // We're ready to raise the event onClick of our component
-        self.raiseEvent('onClick', evtObject);
-      });
-  }, 
-  
+
+    },
+    error: function (qXHR, textStatus, errorThrown) {
+      alert(" Error loading the  SAM File! \n" + textStatus + "\n" + errorThrown + "\n" + qXHR );
+    }
+  });
+},
+
+_select_chromosome: function(full_region){
+  this._container.empty();
+  this.alignments = {};
+  this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
+  var new_div = document.createElement("div");
+  new_div.style.width = this.opt.base_width * this.full_region.end  + "px";
+  this._render_div = new_div;    
+  this._container.append(new_div);  
+}, 
+
+
+setRegion: function(region){
+    //TODO: clear DIV if the entry is different to the current displayed entry. Also clear the cache. 
+    var reg = this.parse_region(region);
+
+   if("undefined" ===  typeof this.current_region || reg.entry != this.current_region.entry){
+     this._select_chromosome(region);
+   }
+   this.current_region = reg;
+   this.load_region(reg);
+ }
+
+
 });
 
 _BAMRegion = function _BAMRegion(entry, start, end) {
-    this.entry = entry;
-    this.start = start;
-    this.end = end;
-    this.toString = function() {
-        return  entry + ":" + start  + "-" + end;
-    };
+  this.entry = entry;
+  this.start = start;
+  this.end = end;
+  this.toString = function() {
+    return  entry + ":" + start  + "-" + end;
+  };
 } ;
 
 //_BAMRegion.prototype.toString = f
