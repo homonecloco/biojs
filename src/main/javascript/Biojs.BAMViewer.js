@@ -69,8 +69,9 @@
       'text-align': 'center',
       'vertical-align':'top',
       'display': 'table-cell',
-      'width': '597px',
-      'height': '300px' , 
+      'width': self.opt.width,
+      'height': self.opt.height  ,
+      'float' : self.opt.float, 
       'overflow': 'auto'    
     });
 
@@ -89,9 +90,7 @@
 
 
     //Here starts the real SAM stuff. 
-
     this.dataSet = options.dataSet
-
     this.reference = options.reference;
 
     //An array with all the alignments. Each position represents a position in the chromosome. 
@@ -116,11 +115,12 @@
     selectionFontColor: "black",
     selectionBackgroundColor: "yellow",
     dataSet: "../../main/resources/data/BAMViwerDataSet.tsv", 
-    fontSize: "10px",
-    width: "597px",
-    height: "300px",
-    base_width: "15px"
-
+    fontSize: "15px",
+    width: "80%",
+    height: "100%",
+    float: "right",
+    base_width: 15,
+    default_read_background:"blue"
 
   },
   
@@ -282,11 +282,10 @@
               var new_div = document.createElement("div");
              // new_div.setAttribute("style","width:500px");
               new_div.style.width = this.opt.base_width * aln.len + "px"; 
-              new_div.style.height = this.opt.fontSize 
-              new_div.style.float = "top";
+              new_div.style.height = this.opt.fontSize ;
               new_div.style.position = "absolute";
               new_div.style.left = ( i - 1) * this.opt.base_width + "px"; 
-              new_div.style.backgroundColor = "white"; 
+              new_div.style.backgroundColor = this.opt.default_read_background; 
               
               aln.div = new_div;
 
@@ -343,6 +342,7 @@
       if(reads.length > 0){
         this.container.add_alignments(reads);
         this.container.render_visible();
+        this.container._move_to_top();
       } else {
         alert("Unknown format detected");
       }
@@ -359,11 +359,45 @@ _select_chromosome: function(full_region){
   this.alignments = {};
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
   var new_div = document.createElement("div");
-  new_div.style.width = this.opt.base_width * this.full_region.end  + "px";
+  new_div.style.width = "100%";
   this._render_div = new_div;    
   this._container.append(new_div);  
 }, 
 
+_move_to_top: function  (){
+  var top = 5; // top value for next row
+  var margin = 5; // space between rows
+  var rows = []; // list of rows
+    for (var c = 0; c < this._render_div.children.length; c++) {
+        var ok = false;
+        var child = this._render_div.children[c];
+        var cr = child.getBoundingClientRect();
+        for (var i = 0; i < rows.length; i++) {
+            if (cr.left > rows[i].right) {
+                rows[i].right = cr.right;
+                child.style.top = rows[i].top + "px";
+                ok = true;
+                break;
+            }
+            if (cr.right < rows[i].left) {
+                rows[i].left = cr.left;
+                child.style.top = rows[i].top + "px";
+                ok = true;
+                break;
+            }
+        }
+        if (!ok) {
+            // add new row
+            rows.push({
+                top: top,
+                right: cr.right,
+                left: cr.left
+            });
+            child.style.top = top + "px";
+            top = child.getBoundingClientRect().bottom + margin;
+        }
+    }
+},
 
 setRegion: function(region){
     //TODO: clear DIV if the entry is different to the current displayed entry. Also clear the cache. 
@@ -372,6 +406,15 @@ setRegion: function(region){
    if("undefined" ===  typeof this.current_region || reg.entry != this.current_region.entry){
      this._select_chromosome(region);
    }
+
+   local_width=this._render_div.clientWidth;
+
+   //alert("width: " + local_width);
+   region_end = Math.ceil( local_width/this.opt.base_width);
+   //alert("region_end: " + region_end);
+   reg.end = reg.start + region_end;
+   this._container.reg;
+   //alert(JSON.stringify(reg));
    this.current_region = reg;
    this.load_region(reg);
  }
