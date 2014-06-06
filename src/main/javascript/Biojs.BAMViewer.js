@@ -119,7 +119,7 @@
     width: "80%",
     height: "100%",
     float: "right",
-    base_width: 15,
+    base_width: 5,
     default_read_background:"blue"
 
   },
@@ -359,19 +359,27 @@ _select_chromosome: function(full_region){
   this.alignments = {};
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
   var new_div = document.createElement("div");
-  new_div.style.width = "100%";
+  new_div.style.width = this.opt.width;
+  new_div.style.position = "absolute";
+  new_div.style.overflow = "visible";
   this._render_div = new_div;    
   this._container.append(new_div);  
 }, 
 
 _move_to_top: function  (){
-  var top = 5; // top value for next row
-  var margin = 5; // space between rows
+  var top = 1; // top value for next row
+  var margin = 1; // space between rows
   var rows = []; // list of rows
     for (var c = 0; c < this._render_div.children.length; c++) {
         var ok = false;
         var child = this._render_div.children[c];
-        var cr = child.getBoundingClientRect();
+        //var cr = child.getBoundingClientRect();
+        var cr = {};
+        cr.top = child.offsetTop;
+        cr.left = child.offsetLeft;
+        cr.right = cr.left + parseInt(child.style.width, 10);
+        cr.bottom = cr.top + parseInt(child.style.height, 10);
+       
         for (var i = 0; i < rows.length; i++) {
             if (cr.left > rows[i].right) {
                 rows[i].right = cr.right;
@@ -392,9 +400,10 @@ _move_to_top: function  (){
                 top: top,
                 right: cr.right,
                 left: cr.left
-            });
+            }); 
             child.style.top = top + "px";
-            top = child.getBoundingClientRect().bottom + margin;
+            //alert(child.getBoundingClientRect().bottom);
+            top =  child.offsetTop + parseInt(child.style.height, 10) + margin;
         }
     }
 },
