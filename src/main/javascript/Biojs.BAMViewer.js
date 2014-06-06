@@ -218,14 +218,14 @@
 
     var obj = {
       qname : currentline[0] ,
-      flags : parseInt(currentline[1]),
+      flags : parseInt(currentline[1],10),
       rname : currentline[2] ,
-      pos   : parseInt(currentline[3]) ,
-      mapq  : parseInt(currentline[4]) ,
+      pos   : parseInt(currentline[3],10) ,
+      mapq  : parseInt(currentline[4],10) ,
       cigar : currentline[5] ,
       rnext : currentline[6] ,
-      pnext : parseInt(currentline[7]),
-      tlen  : parseInt(currentline[8]) ,
+      pnext : parseInt(currentline[7],10),
+      tlen  : parseInt(currentline[8],10) ,
       seq   : currentline[9] ,
       qual  : currentline[10] ,
       len   : 100, //TODO: change this to use the cigar.  
@@ -361,7 +361,8 @@ _select_chromosome: function(full_region){
   var new_div = document.createElement("div");
   new_div.style.width = this.opt.width;
   new_div.style.position = "absolute";
-  new_div.style.overflow = "visible";
+  new_div.style.overflow = "hidden";
+  new_div.style.height = this.opt.height;
   this._render_div = new_div;    
   this._container.append(new_div);  
 }, 
