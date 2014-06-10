@@ -132,7 +132,7 @@ Biojs.BAMRegionList = Biojs.extend (
   	for (var i = 0; i < arrayLength; i++) {
   		this.callbacks[i].setRegion(region);
   	}
-  	//alert(region);
+
   },
 
   load_list: function(){
