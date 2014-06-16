@@ -359,9 +359,14 @@ _select_chromosome: function(full_region){
   this.alignments = {};
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
   var new_div = document.createElement("div");
-  new_div.style.width = this.opt.width;
+  var total_width =  this.full_region.end * this.opt.base_width;
+  //alert(this._container.width()); 
+  w=this._container.width()
+  new_div.style.maxWidth = w + "px";
+  new_div.style.width = total_width + "px";
+ // new_div.style.maxWidth = w;
   new_div.style.position = "absolute";
-  new_div.style.overflow = "hidden";
+  new_div.style.overflow = "scroll";
   new_div.style.height = this.opt.height;
   this._render_div = new_div;    
   this._container.append(new_div);  
