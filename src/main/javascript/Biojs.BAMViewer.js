@@ -46,6 +46,10 @@
  * });  
  * 
  */
+
+ var _bam_offset_data;
+ var _tmp_target;
+ var _startX ;
  Biojs.BAMViewer = Biojs.extend (
   /** @lends Biojs.BAMViewer# */
   {
@@ -87,6 +91,8 @@
     // Set the content
     
     this._container.append('<div>Please select a region</div>');
+   
+    
 
 
     //Here starts the real SAM stuff. 
@@ -189,8 +195,8 @@
       result.push(obj);
     }
 
-  return result; //JavaScript object
-  //return JSON.stringify(result); //JSON
+    return result; //JavaScript object
+    //return JSON.stringify(result); //JSON
    },
 
   /** 
@@ -215,7 +221,7 @@
     var currentline = sam_line.split("\t");
 
     var cigar = currentline[5] 
-
+    container = this;
     var obj = {
       qname : currentline[0] ,
       flags : parseInt(currentline[1],10),
@@ -229,8 +235,25 @@
       seq   : currentline[9] ,
       qual  : currentline[10] ,
       len   : 100, //TODO: change this to use the cigar.  
-      has_flag : function (f){return flags & f > 0 }
-    };
+      has_flag : function (f){return flags & f > 0 },
+      build_div: function(aln_obj){
+              var new_div = document.createElement("div");
+              // new_div.setAttribute("style","width:500px");
+              //alert(container.opt.fontSize );
+              //alert(this.len);
+              //alert(this.pos );
+              //alert(container.opt.default_read_background);
+              new_div.style.width = container.opt.base_width * this.len + "px"; 
+              new_div.style.height = container.opt.fontSize ;
+              new_div.style.position = "absolute";
+              n_pos = ( this.pos - 1) * container.opt.base_width;
+              //alert(n_pos);
+              new_div.style.left = n_pos + "px";
+              new_div.style.backgroundColor = container.opt.default_read_background; 
+              this.div = new_div;
+              //alert(this.qname);
+              //alert(new_div);
+    }};
 
 
     /* @is_paired  = (@flag & 0x0001) > 0
@@ -278,19 +301,11 @@
             aln = current_alignments[j];
             
             if("undefined" === typeof aln.div){ //We dont render it again if it already exists
-      
-              var new_div = document.createElement("div");
-             // new_div.setAttribute("style","width:500px");
-              new_div.style.width = this.opt.base_width * aln.len + "px"; 
-              new_div.style.height = this.opt.fontSize ;
-              new_div.style.position = "absolute";
-              new_div.style.left = ( i - 1) * this.opt.base_width + "px"; 
-              new_div.style.backgroundColor = this.opt.default_read_background; 
-              
-              aln.div = new_div;
+             aln.build_div();
+             
 
               //alert(JSON.stringify(aln.div)); 
-              canvas.appendChild(new_div);
+              canvas.appendChild(aln.div);
             }
             
           }
@@ -358,13 +373,67 @@ _select_chromosome: function(full_region){
   this._container.empty();
   this.alignments = {};
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
+
   var new_div = document.createElement("div");
+  new_div.addEventListener('dragstart',this._drag_start,false); 
+  new_div.addEventListener('dragover',this._drag_over,false); 
+  new_div.addEventListener('drop',this._drop,false); 
   new_div.style.width = this.opt.width;
+  new_div.draggable = "true";
+  //new_div.style.width = this.opt.base_width * this.full_region.end;
   new_div.style.position = "absolute";
   new_div.style.overflow = "hidden";
   new_div.style.height = this.opt.height;
+  //new_div.id =;
+  //new_div.draggable({ containment: "parent" });
+  //new_div.style.left = 0;
+  //new_div.style.top = 0;
+  new_div.bam_container = this;
   this._render_div = new_div;    
   this._container.append(new_div);  
+}, 
+
+drag_offset_data : "" ,  //Global variable as Chrome doesn't allow access to event.dataTransfer in dragover
+
+_drag_start: function (event) {
+    offset_data = event.clientX + ',' +  event.clientY;
+    _startX = event.clientX;
+    _bam_offset_data= offset_data;
+    _tmp_target = event.target;
+},
+
+_move_draged: function(render_div, offset, event){
+
+  console.log("From " +  _startX + " to " + event.clientX);
+  var diff_x =  event.clientX   - _startX  ;
+  var als_rend = render_div.children;
+  //alert(als_rend.length);
+  for(var i = 0; i < als_rend.length; i++) {
+    console.log("diff_x\t" + diff_x);
+    var local_left = parseInt(als_rend[i].offsetLeft , 10);
+    var new_pos = local_left + diff_x;
+    als_rend[i].style.left = new_pos + "px";
+
+  }
+  //var diff_y = event.clientX - parseInt(offset[0],10); 
+},
+
+_drag_over: function (event) { 
+    var offset;
+    offset = _bam_offset_data;
+    var dm = _tmp_target ;
+    var render_div =  _tmp_target ;
+    //render_div.bam_container._move_draged(render_div, offset, event);
+    event.preventDefault(); 
+    return false; 
+} ,
+_drop: function (event) { 
+    var offset;
+    offset = _bam_offset_data;  
+    var render_div =  _tmp_target ;
+    render_div.bam_container._move_draged(render_div, offset, event);
+    event.preventDefault();
+    return false;
 }, 
 
 _move_to_top: function  (){
