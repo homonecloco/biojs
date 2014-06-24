@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
 	<title>Biojs.MyHelloWorld test</title>
+
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMViewer.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMRegionList.js"></script>
@@ -9,7 +10,7 @@
 	<script language="JavaScript" type="text/javascript">
 		window.onload = function() {
 
-			var bw = 5;
+			var bw = 10;
 			var flanking_cache = 100;
 			
 			var instance = new Biojs.BAMViewer({
@@ -35,8 +36,10 @@
   			region_list.add_region_callback(instance);
 		};
 	</script>
+	<link rel="stylesheet" type="text/css" href="../../main/resources/css/Biojs.BAMViewer.css">
 	</head>
 	<body>
+		
 		<div id="header" style="background-color:#FFA500;">
 		<h1 style="margin-bottom:0;">BioJS SAMViewer mini-test</h1></div>
 		<div id="bam_list" style="background-color:#FFD700;height:600px;width:20%;float:left;">

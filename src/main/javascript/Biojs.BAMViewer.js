@@ -67,8 +67,7 @@
     // Apply options values
     this._container.css({
       'font-family': self.opt.fontFamily, // this is one example of the use of self instead of this
-      'background-color': self.opt.backgroundColor,
-      'color': self.opt.fontColor,
+
       'font-size': self.opt.fontSize,
       'text-align': 'center',
       'vertical-align':'top',
@@ -222,6 +221,8 @@
 
     var cigar = currentline[5] 
     container = this;
+    console.log("Parsing flagg:" +  parseInt(currentline[1],10));
+
     var obj = {
       qname : currentline[0] ,
       flags : parseInt(currentline[1],10),
@@ -235,21 +236,120 @@
       seq   : currentline[9] ,
       qual  : currentline[10] ,
       len   : 100, //TODO: change this to use the cigar.  
-      has_flag : function (f){return flags & f > 0 },
+      has_flag : function (f){ 
+        f = parseInt(f);
+        return (this.flags & f) == f ;
+      },
+      forward: function(){return  this.has_flag(16);},
       build_div: function(aln_obj){
               var new_div = document.createElement("div");
-              // new_div.setAttribute("style","width:500px");
-              //alert(container.opt.fontSize );
-              //alert(this.len);
-              //alert(this.pos );
-              //alert(container.opt.default_read_background);
-              new_div.style.width = container.opt.base_width * this.len + "px"; 
+             
+              //Get the space for the bar
               new_div.style.height = container.opt.fontSize ;
+
+              
               new_div.style.position = "absolute";
               n_pos = ( this.pos - 1) * container.opt.base_width;
               //alert(n_pos);
               new_div.style.left = n_pos + "px";
-              new_div.style.backgroundColor = container.opt.default_read_background; 
+
+              if(this.forward()){
+                new_div.classList.add("bam_forward");
+              }else{
+                new_div.classList.add("bam_reverse");
+              }
+
+              //new_div.style.backgroundColor = container.opt.default_read_background;
+              
+              //Parse the cigar and build the divs stuff:
+              
+              var cigars = this.cigar.replace(/([SIXMND])/g, ":$1,");
+              var cigars_array = cigars.split(',');
+             // console.log(JSON.stringify(cigars_array));
+              //for (var i = 0; i < cigars_array.length - 1; i++) {
+
+              //}
+              var cig_index = 0;
+
+              this.len = 0
+              var cig_end  = -1;
+              var cig ;
+              var key;
+              var length;
+              var cig_index = 0;
+              var last_div;
+              changed = true;
+              for ( var i = 0; i < this.seq.length; i++ ){
+              
+                   
+                if(i > cig_end || changed == true){
+                  //console.log("parsing cigar " + i + "< " + cig_end);
+                  //console.log("Cig index: " + cig_index);
+                  //console.log ("c:" + cigars_array[cig_index]);
+                  cig = cigars_array[cig_index].split(":"); 
+                  key = cig[1];
+                  length = parseInt(cig[0]);
+                  cig_end = i + length;
+                  //console.log("k:" + key + " l:" + length);
+                  cig_index +=1
+                  changed = false;
+
+                }
+                if(key == "M" || key == "X" || key == "="){
+                  display_base = this.seq[i];
+                  var current_base_span = document.createElement("div");
+                  current_base_span.classList.add("bam_base");
+                  current_base_span.classList.add("bam_base_" + display_base);
+                  current_base_span.style.width = container.opt.base_width + "px";
+                  current_base_span.style.float = "left";
+               
+                  //current_base_span.classList.add("bam_base_" + display_base );
+                
+                  //current_base_span.setAttribute('id', "bam_base_" + display_base);
+                  current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
+                  last_div = current_base_span;
+
+                  new_div.appendChild(current_base_span);
+
+                  this.len += 1
+                  current_base_span.id = this.len
+                }else if(key == "I"){
+                  last_div.classList.add("bam_base_I");
+                  //i--;
+                  changed = true;
+                  //console.log("Insertion in: " + this.len);
+                }else if(key == "D" || key == "N"){
+                  for (var j  = 0; j < length; j ++ ) {
+                     display_base =  "*";
+                     var current_base_span = document.createElement("div");
+                     current_base_span.classList.add("bam_base");
+                     current_base_span.classList.add("bam_base_D");
+                     current_base_span.style.width = container.opt.base_width + "px";
+                     current_base_span.style.float = "left";
+                     current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
+                     last_div = current_base_span;
+                     new_div.appendChild(current_base_span);
+                     this.len += 1;
+                      current_base_span.id = this.len
+                  }
+                  changed = true;
+                  //cig_index += 1;
+                  i--;
+                }
+              }
+
+              
+
+              //this.len = this.seq.length;
+              new_div.style.width = container.opt.base_width * this.len + "px"; 
+              //new_div.refresh;
+
+              
+
+              //new_div.appendChild(new_div.ownerDocument.createTextNode(this.seq));
+              
+
+
               this.div = new_div;
               //alert(this.qname);
               //alert(new_div);
@@ -306,11 +406,15 @@
 
               //alert(JSON.stringify(aln.div)); 
               canvas.appendChild(aln.div);
+
             }
             
           }
         }
       }
+      canvas.style.display='none';
+      canvas.style.offsetHeight;
+      canvas.style.display='block';
     },
 
     add_alignments: function(alignments){
@@ -407,9 +511,7 @@ _move_draged: function(render_div, offset, event){
   console.log("From " +  _startX + " to " + event.clientX);
   var diff_x =  event.clientX   - _startX  ;
   var als_rend = render_div.children;
-  //alert(als_rend.length);
   for(var i = 0; i < als_rend.length; i++) {
-    console.log("diff_x\t" + diff_x);
     var local_left = parseInt(als_rend[i].offsetLeft , 10);
     var new_pos = local_left + diff_x;
     als_rend[i].style.left = new_pos + "px";
@@ -432,6 +534,7 @@ _drop: function (event) {
     offset = _bam_offset_data;  
     var render_div =  _tmp_target ;
     render_div.bam_container._move_draged(render_div, offset, event);
+    render_div.bam_container._move_to_top();
     event.preventDefault();
     return false;
 }, 
@@ -440,17 +543,21 @@ _move_to_top: function  (){
   var top = 1; // top value for next row
   var margin = 1; // space between rows
   var rows = []; // list of rows
+  
     for (var c = 0; c < this._render_div.children.length; c++) {
+
         var ok = false;
         var child = this._render_div.children[c];
         //var cr = child.getBoundingClientRect();
         var cr = {};
         cr.top = child.offsetTop;
         cr.left = child.offsetLeft;
+        //console.log("current width: " + child.style.width);
         cr.right = cr.left + parseInt(child.style.width, 10);
         cr.bottom = cr.top + parseInt(child.style.height, 10);
        
         for (var i = 0; i < rows.length; i++) {
+          //   console.log("Moving to top" + i);
             if (cr.left > rows[i].right) {
                 rows[i].right = cr.right;
                 child.style.top = rows[i].top + "px";

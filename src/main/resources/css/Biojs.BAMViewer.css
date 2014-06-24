@@ -1,21 +1,49 @@
-/* Use this class to apply all the style settings you need for your component
-   In this case, will be applied following settings for the main div container 
-*/
-
-div.BAMViewer {
-   font-size: 36px,
-   text-align: center,
-   vertical-align:middle,
-   display: table-cell,
-   width: 597px,
-   height: 300px
+.bam_base {
+   float: left !important;
 }
 
-/* Any other element inside your component, should be styled by trough
-   filtering up desired children of main container. 
-   For example, lets filter all the span tags inside MyHelloWorld: 
-*/
+.bam_base_A {
+   background-color:#FFFF66 ;
+}
 
-div.BAMViewer span {
-   /* Your style settings here */   
+
+.bam_base_C {
+   background-color:#47D147;
+   color: black;
+}
+
+.bam_base_G {
+   background-color:#3399FF;
+   color: black;
+}
+
+.bam_base_T {
+   background-color:#FF704D;
+   color: black;
+}
+
+.bam_base_N {
+   background-color:black;
+   color: white;
+}
+
+.bam_base_I{
+   box-sizing:border-box;
+   -moz-box-sizing:border-box;
+   -webkit-box-sizing:border-box;
+   border-style:solid;
+   border-color:red;
+   border-width: 1px;
+}
+
+.bam_base_D{
+   background-color:white;
+   color: black;
+}
+
+.bam_forward {
+   text-transform:uppercase;
+}
+.bam_reverse {
+   text-transform:lowercase;
 }
