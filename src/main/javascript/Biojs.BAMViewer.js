@@ -481,6 +481,7 @@ _select_chromosome: function(full_region){
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
 
   var new_div = document.createElement("div");
+  
   new_div.addEventListener('dragstart',this._drag_start,false); 
   new_div.addEventListener('dragover',this._drag_over,false); 
   new_div.addEventListener('drop',this._drop,false); 
@@ -488,7 +489,7 @@ _select_chromosome: function(full_region){
   new_div.draggable = "true";
   //new_div.style.width = this.opt.base_width * this.full_region.end;
   new_div.style.position = "absolute";
-  new_div.style.overflow = "hidden";
+  new_div.style.overflow = "scroll";
   new_div.style.height = this.opt.height;
   //new_div.id =;
   //new_div.draggable({ containment: "parent" });
