@@ -241,9 +241,9 @@
         return (this.flags & f) == f ;
       },
       forward: function(){return  this.has_flag(16);},
-      build_div: function(l_container){
+      build_div: function(){
               var new_div = document.createElement("div");
-              l_container.appendChild(new_div);
+              //l_container.appendChild(new_div);
               //Get the space for the bar
               new_div.style.height = container.opt.fontSize ;
 
@@ -407,7 +407,7 @@
              
 
               //alert(JSON.stringify(aln.div)); 
-             //canvas.appendChild(aln.div);
+             canvas.appendChild(aln.div);
 
             }
             
@@ -479,25 +479,21 @@ _select_chromosome: function(full_region){
   this._container.empty();
   this.alignments = {};
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
+	
+  var outter_div = document.createElement("div");
+  outter_div.style.width = this.opt.width;
+  outter_div.style.position = "absolute";
+  outter_div.style.overflow = "scroll";
+  outter_div.style.height = this.opt.height;
 
   var new_div = document.createElement("div");
-  
-  new_div.addEventListener('dragstart',this._drag_start,false); 
-  new_div.addEventListener('dragover',this._drag_over,false); 
-  new_div.addEventListener('drop',this._drop,false); 
-  new_div.style.width = this.opt.width;
-  new_div.draggable = "true";
-  //new_div.style.width = this.opt.base_width * this.full_region.end;
-  new_div.style.position = "absolute";
-  new_div.style.overflow = "scroll";
-  new_div.style.height = this.opt.height;
-  //new_div.id =;
-  //new_div.draggable({ containment: "parent" });
-  //new_div.style.left = 0;
-  //new_div.style.top = 0;
+
+  new_div.classList.add("ui-widget-content");
+  jQuery(new_div).draggable({ axis: "x" });
   new_div.bam_container = this;
   this._render_div = new_div;    
-  this._container.append(new_div);  
+  outter_div.appendChild(new_div);
+  this._container.append(outter_div);  
 }, 
 
 drag_offset_data : "" ,  //Global variable as Chrome doesn't allow access to event.dataTransfer in dragover
