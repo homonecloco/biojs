@@ -71,7 +71,7 @@ Biojs.BAMRegionList = Biojs.extend (
 
 	  this._container.empty()
 	  this._container.append('<span>Loading...</span>');
-	  this._container.BAMRegionList = self
+	  this._container.BAMRegionList = self;
 	  this.load_list();
 
 

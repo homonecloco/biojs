@@ -1,6 +1,60 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
+
+	<link rel="stylesheet"  charset="utf-8" type="text/css" href="/biojs/main/resources/css/Biojs.BAMViewer.css"> </link>
+	<style type="text/css">
+	.bam_base {
+   float: left !important;
+}
+
+.bam_base_A {
+   background-color:#FFFF66 ;
+}
+
+
+.bam_base_C {
+   background-color:#47D147;
+   color: black;
+}
+
+.bam_base_G {
+   background-color:#3399FF;
+   color: black;
+}
+
+.bam_base_T {
+   background-color:#FF704D;
+   color: black;
+}
+
+.bam_base_N {
+   background-color:black;
+   color: white;
+}
+
+.bam_base_I{
+   box-sizing:border-box;
+   -moz-box-sizing:border-box;
+   -webkit-box-sizing:border-box;
+   border-style:solid;
+   border-color:red;
+   border-width: 1px;
+}
+
+.bam_base_D{
+   background-color:white;
+   color: black;
+}
+
+.bam_forward {
+   text-transform:uppercase;
+}
+.bam_reverse {
+   text-transform:lowercase;
+}
+</style>
+
 	<title>Biojs.MyHelloWorld test</title>
 
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.js"></script>
@@ -36,10 +90,10 @@
   			region_list.add_region_callback(instance);
 		};
 	</script>
-	<link rel="stylesheet" type="text/css" href="../../main/resources/css/Biojs.BAMViewer.css">
+
 	</head>
 	<body>
-		
+
 		<div id="header" style="background-color:#FFA500;">
 		<h1 style="margin-bottom:0;">BioJS SAMViewer mini-test</h1></div>
 		<div id="bam_list" style="background-color:#FFD700;height:600px;width:20%;float:left;">

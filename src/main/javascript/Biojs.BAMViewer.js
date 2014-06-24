@@ -73,8 +73,8 @@
       'vertical-align':'top',
       'display': 'table-cell',
       'width': self.opt.width,
-      'height': self.opt.height  ,
-      'float' : self.opt.float, 
+      'height': self.opt.height,
+      'float' : self.opt.float_bam, 
       'overflow': 'auto'    
     });
 
@@ -123,8 +123,8 @@
     fontSize: "15px",
     width: "80%",
     height: "100%",
-    float: "right",
-    base_width: 5,
+    float_bam: "right",
+    base_width: 10,
     default_read_background:"blue"
 
   },
@@ -241,9 +241,9 @@
         return (this.flags & f) == f ;
       },
       forward: function(){return  this.has_flag(16);},
-      build_div: function(aln_obj){
+      build_div: function(l_container){
               var new_div = document.createElement("div");
-             
+              l_container.appendChild(new_div);
               //Get the space for the bar
               new_div.style.height = container.opt.fontSize ;
 
@@ -298,10 +298,12 @@
                 if(key == "M" || key == "X" || key == "="){
                   display_base = this.seq[i];
                   var current_base_span = document.createElement("div");
-                  current_base_span.classList.add("bam_base");
-                  current_base_span.classList.add("bam_base_" + display_base);
+                  new_div.appendChild(current_base_span);
+                  //current_base_span.classList.add("bam_base");
+                  //current_base_span.classList.add("bam_base_" + display_base);
+                  current_base_span.className = "bam_base_" + display_base;
                   current_base_span.style.width = container.opt.base_width + "px";
-                  current_base_span.style.float = "left";
+                  current_base_span.style.cssFloat = "left";
                
                   //current_base_span.classList.add("bam_base_" + display_base );
                 
@@ -309,7 +311,7 @@
                   current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
                   last_div = current_base_span;
 
-                  new_div.appendChild(current_base_span);
+                  
 
                   this.len += 1
                   current_base_span.id = this.len
@@ -325,7 +327,7 @@
                      current_base_span.classList.add("bam_base");
                      current_base_span.classList.add("bam_base_D");
                      current_base_span.style.width = container.opt.base_width + "px";
-                     current_base_span.style.float = "left";
+                     current_base_span.style.cssFloat = "left";
                      current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
                      last_div = current_base_span;
                      new_div.appendChild(current_base_span);
@@ -401,20 +403,20 @@
             aln = current_alignments[j];
             
             if("undefined" === typeof aln.div){ //We dont render it again if it already exists
-             aln.build_div();
+             aln.build_div(canvas);
              
 
               //alert(JSON.stringify(aln.div)); 
-              canvas.appendChild(aln.div);
+             //canvas.appendChild(aln.div);
 
             }
             
           }
         }
       }
-      canvas.style.display='none';
-      canvas.style.offsetHeight;
-      canvas.style.display='block';
+      //canvas.style.display='none';
+      //canvas.style.offsetHeight;
+      //canvas.style.display='block';
     },
 
     add_alignments: function(alignments){
