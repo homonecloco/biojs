@@ -78,14 +78,7 @@
       'overflow': 'auto'    
     });
 
-    // Disable text selection and
-    // Change the selection mouse pointer  
-    // from text to hand.
-    this._container.css({
-      '-moz-user-select':'none',
-      '-webkit-user-select':'none',
-      'user-select':'none'
-    });
+   
 
     // Set the content
     
@@ -221,7 +214,7 @@
 
     var cigar = currentline[5] 
     container = this;
-    console.log("Parsing flagg:" +  parseInt(currentline[1],10));
+    //console.log("Parsing flagg:" +  parseInt(currentline[1],10));
 
     var obj = {
       qname : currentline[0] ,
@@ -448,13 +441,13 @@
     //reg = region.entry + ":" + region.start + "-" + region.end;
     //TODO: Force the region to be up to a maximum size. 
     reg = region.toString;
-
+ 
 
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
   jQuery.ajax({
     type: "GET",
     url: this.dataSet,
-    data: { region: reg, ref: this.reference } ,
+    data: { region: reg } ,
     dataType: "text",
     container: this,
     success: function (data) {
@@ -485,15 +478,43 @@ _select_chromosome: function(full_region){
   outter_div.style.position = "absolute";
   outter_div.style.overflow = "scroll";
   outter_div.style.height = this.opt.height;
-
   var new_div = document.createElement("div");
-
   new_div.classList.add("ui-widget-content");
-  jQuery(new_div).draggable({ axis: "x" });
+  //jQuery(new_div).draggable({ axis: "x" });
+  jQuery(new_div).draggable({
+    start: function() {
+       // counts[ 0 ]++;
+        //updateCounterStatus( $start_counter, counts[ 0 ] );
+      },
+      drag: function() {
+       
+      },
+      stop: function() {
+        
+
+        top_pos = parseInt(new_div.style.top);
+        bottom_pos = parseInt(new_div.style.top) + parseInt(new_div.style.height) ;
+        height = parseInt(new_div.style.height);
+
+        console.log("top: " + top_pos);
+        console.log("bottom: " + bottom_pos);
+        console.log("height: " + height);
+        if(bottom_pos <= 50){
+          new_div.style.top =  (50 - height ) + "px";
+        }
+        if(top_pos > 0){
+          new_div.style.top =  "0px";
+        }
+        //counts[ 2 ]++;
+        //updateCounterStatus( $stop_counter, counts[ 2 ] );
+      }
+
+  });
   new_div.bam_container = this;
   this._render_div = new_div;    
   outter_div.appendChild(new_div);
   this._container.append(outter_div);  
+
 }, 
 
 drag_offset_data : "" ,  //Global variable as Chrome doesn't allow access to event.dataTransfer in dragover
@@ -542,7 +563,10 @@ _move_to_top: function  (){
   var top = 1; // top value for next row
   var margin = 1; // space between rows
   var rows = []; // list of rows
+ // this._render_div.style.height = '300px';
+  //this._render_div.style.display = 'none';
   
+  var row_depth = 0;
     for (var c = 0; c < this._render_div.children.length; c++) {
 
         var ok = false;
@@ -551,9 +575,10 @@ _move_to_top: function  (){
         var cr = {};
         cr.top = child.offsetTop;
         cr.left = child.offsetLeft;
+        ch =  parseInt(child.style.height, 10)
         //console.log("current width: " + child.style.width);
         cr.right = cr.left + parseInt(child.style.width, 10);
-        cr.bottom = cr.top + parseInt(child.style.height, 10);
+        cr.bottom = cr.top + ch;
        
         for (var i = 0; i < rows.length; i++) {
           //   console.log("Moving to top" + i);
@@ -575,13 +600,31 @@ _move_to_top: function  (){
             rows.push({
                 top: top,
                 right: cr.right,
-                left: cr.left
+                left: cr.left,
+                bottom: top + ch
             }); 
-            child.style.top = top + "px";
+    
             //alert(child.getBoundingClientRect().bottom);
-            top =  child.offsetTop + parseInt(child.style.height, 10) + margin;
+            child.style.top = top + ch + "px";
+            top =  child.offsetTop + margin;
+            console.log("Top: " + top + "row_depth: " + row_depth);
+            
+            if(top + ch >= row_depth ){
+              new_depth = top;
+             // console.log("In the if: " + new_depth);
+              console.log("Before the change" + this._render_div.style.height);
+              this._render_div.style.height = new_depth + 3* ch + "px";
+              console.log("After the change: " + this._render_div.style.height);
+
+              //child.style.height <= 
+              row_depth = new_depth + ch;
+            }
+
         }
     }
+    console.log("New row_depth: " + row_depth);
+ //   this._render_div.style.height = row_depth;
+    this._render_div.style.display = 'block';
 },
 
 setRegion: function(region){
@@ -598,6 +641,7 @@ setRegion: function(region){
    region_end = Math.ceil( local_width/this.opt.base_width);
    //alert("region_end: " + region_end);
    reg.end = reg.start + region_end;
+   console.log(reg.start +  ":" + region_end);
    this._container.reg;
    //alert(JSON.stringify(reg));
    this.current_region = reg;
@@ -608,9 +652,9 @@ setRegion: function(region){
 });
 
 _BAMRegion = function _BAMRegion(entry, start, end) {
-  this.entry = entry;
-  this.start = start;
-  this.end = end;
+  this.entry = entry,10;
+  this.start = parseInt(start,10);
+  this.end = parseInt(end,10);
   this.toString = function() {
     return  entry + ":" + start  + "-" + end;
   };
