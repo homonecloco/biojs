@@ -236,14 +236,9 @@
       forward: function(){return  this.has_flag(16);},
       build_div: function(){
               var new_div = document.createElement("div");
-              //l_container.appendChild(new_div);
-              //Get the space for the bar
               new_div.style.height = container.opt.fontSize ;
-
-              
               new_div.style.position = "absolute";
               n_pos = ( this.pos - 1) * container.opt.base_width;
-              //alert(n_pos);
               new_div.style.left = n_pos + "px";
 
               if(this.forward()){
@@ -251,19 +246,10 @@
               }else{
                 new_div.classList.add("bam_reverse");
               }
-
-              //new_div.style.backgroundColor = container.opt.default_read_background;
-              
-              //Parse the cigar and build the divs stuff:
               
               var cigars = this.cigar.replace(/([SIXMND])/g, ":$1,");
               var cigars_array = cigars.split(',');
-             // console.log(JSON.stringify(cigars_array));
-              //for (var i = 0; i < cigars_array.length - 1; i++) {
-
-              //}
               var cig_index = 0;
-
               this.len = 0
               var cig_end  = -1;
               var cig ;
@@ -273,17 +259,11 @@
               var last_div;
               changed = true;
               for ( var i = 0; i < this.seq.length; i++ ){
-              
-                   
                 if(i > cig_end || changed == true){
-                  //console.log("parsing cigar " + i + "< " + cig_end);
-                  //console.log("Cig index: " + cig_index);
-                  //console.log ("c:" + cigars_array[cig_index]);
                   cig = cigars_array[cig_index].split(":"); 
                   key = cig[1];
                   length = parseInt(cig[0]);
                   cig_end = i + length;
-                  //console.log("k:" + key + " l:" + length);
                   cig_index +=1
                   changed = false;
 
@@ -292,27 +272,16 @@
                   display_base = this.seq[i];
                   var current_base_span = document.createElement("div");
                   new_div.appendChild(current_base_span);
-                  //current_base_span.classList.add("bam_base");
-                  //current_base_span.classList.add("bam_base_" + display_base);
                   current_base_span.className = "bam_base_" + display_base;
                   current_base_span.style.width = container.opt.base_width + "px";
                   current_base_span.style.cssFloat = "left";
-               
-                  //current_base_span.classList.add("bam_base_" + display_base );
-                
-                  //current_base_span.setAttribute('id', "bam_base_" + display_base);
                   current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
                   last_div = current_base_span;
-
-                  
-
                   this.len += 1
                   current_base_span.id = this.len
                 }else if(key == "I"){
                   last_div.classList.add("bam_base_I");
-                  //i--;
                   changed = true;
-                  //console.log("Insertion in: " + this.len);
                 }else if(key == "D" || key == "N"){
                   for (var j  = 0; j < length; j ++ ) {
                      display_base =  "*";
@@ -332,22 +301,8 @@
                   i--;
                 }
               }
-
-              
-
-              //this.len = this.seq.length;
               new_div.style.width = container.opt.base_width * this.len + "px"; 
-              //new_div.refresh;
-
-              
-
-              //new_div.appendChild(new_div.ownerDocument.createTextNode(this.seq));
-              
-
-
               this.div = new_div;
-              //alert(this.qname);
-              //alert(new_div);
     }};
 
 
