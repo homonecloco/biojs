@@ -115,7 +115,7 @@
     dataSet: "../../main/resources/data/BAMViwerDataSet.tsv", 
     fontSize: "15px",
     width: "80%",
-    height: "100%",
+    height: "600px",
     float_bam: "right",
     base_width: 10,
     default_read_background:"blue"
@@ -277,8 +277,8 @@
                   current_base_span.style.cssFloat = "left";
                   current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
                   last_div = current_base_span;
-                  this.len += 1
-                  current_base_span.id = this.len
+                  this.len += 1;
+                  current_base_span.id = this.len;
                 }else if(key == "I"){
                   last_div.classList.add("bam_base_I");
                   changed = true;
@@ -294,7 +294,7 @@
                      last_div = current_base_span;
                      new_div.appendChild(current_base_span);
                      this.len += 1;
-                      current_base_span.id = this.len
+                     current_base_span.id = this.len;
                   }
                   changed = true;
                   //cig_index += 1;
@@ -303,6 +303,7 @@
               }
               new_div.style.width = container.opt.base_width * this.len + "px"; 
               this.div = new_div;
+              return new_div;
     }};
 
 
@@ -340,25 +341,22 @@
       if(start < 0){
         start = 1;
       }
+        
       //alert(JSON.stringify(this.alignments));
       for(i = start; i < region.end + this.opt.flanking_cache ; i++){
-
         if("undefined" !== typeof this.alignments[i]){
          // alert(JSON.stringify(this.alignments[i]) + " i:" + i);
           var current_alignments = this.alignments[i];
           //alert(JSON.stringify(current_alignments) + " i:" + i);
           for (var j in current_alignments) {
             aln = current_alignments[j];
-            
             if("undefined" === typeof aln.div){ //We dont render it again if it already exists
              aln.build_div(canvas);
-             
-
-              //alert(JSON.stringify(aln.div)); 
+              //alert(JSON.stringify(aln.div));
+             var n_pos = ( aln.pos - this._render_div.left_offset - 1) * container.opt.base_width; 
+             aln.div.style.left = n_pos;
              canvas.appendChild(aln.div);
-
             }
-            
           }
         }
       }
@@ -393,7 +391,7 @@
 
     //alert(this.dataSet);
     reference = this.reference;
-    //reg = region.entry + ":" + region.start + "-" + region.end;
+    
     //TODO: Force the region to be up to a maximum size. 
     reg = region.toString;
  
@@ -431,15 +429,20 @@ _select_chromosome: function(full_region){
   var outter_div = document.createElement("div");
   outter_div.style.width = this.opt.width;
   outter_div.style.position = "absolute";
-  outter_div.style.overflow = "scroll";
+  outter_div.style.overflow = "hidden";
   outter_div.style.height = this.opt.height;
   var new_div = document.createElement("div");
   new_div.classList.add("ui-widget-content");
+
+  var grid_w = this.opt.base_width
   //jQuery(new_div).draggable({ axis: "x" });
   jQuery(new_div).draggable({
+    grid: [ 20, grid_w ] ,
     start: function() {
        // counts[ 0 ]++;
         //updateCounterStatus( $start_counter, counts[ 0 ] );
+        top_pos = parseInt(new_div.style.top);
+
       },
       drag: function() {
        
@@ -451,7 +454,7 @@ _select_chromosome: function(full_region){
         bottom_pos = parseInt(new_div.style.top) + parseInt(new_div.style.height) ;
         height = parseInt(new_div.style.height);
 
-        console.log("top: " + top_pos);
+        console.log("top: "    + top_pos);
         console.log("bottom: " + bottom_pos);
         console.log("height: " + height);
         if(bottom_pos <= 50){
@@ -466,9 +469,25 @@ _select_chromosome: function(full_region){
 
   });
   new_div.bam_container = this;
+  new_div.left_offset = 0;
+
   this._render_div = new_div;    
+  
   outter_div.appendChild(new_div);
   this._container.append(outter_div);  
+  
+
+//SETTING UP THE BOTTOM THING
+  var info_div = document.createElement("div");
+  info_div.style.width - this.opt.base_width;
+  info_div.classList.add("bam_info_panel");
+  info_div.appendChild(info_div.ownerDocument.createTextNode("Info text"));
+  
+  outer_info = document.getElementById(this.opt.info_panel);
+  if(outer_info != null){
+    outer_info.removeChild(outer_info.lastChild);
+    outer_info.appendChild(info_div);  
+  }
 
 }, 
 
@@ -521,9 +540,10 @@ _move_to_top: function  (){
  // this._render_div.style.height = '300px';
   //this._render_div.style.display = 'none';
   
+  parent = this._render_div.parentNode;
+ // parent.removeChild(this._render_div);
   var row_depth = 0;
     for (var c = 0; c < this._render_div.children.length; c++) {
-
         var ok = false;
         var child = this._render_div.children[c];
         //var cr = child.getBoundingClientRect();
@@ -558,20 +578,16 @@ _move_to_top: function  (){
                 left: cr.left,
                 bottom: top + ch
             }); 
-    
             //alert(child.getBoundingClientRect().bottom);
             child.style.top = top + ch + "px";
             top =  child.offsetTop + margin;
-            console.log("Top: " + top + "row_depth: " + row_depth);
-            
+//            console.log("Top: " + top + "row_depth: " + row_depth);
             if(top + ch >= row_depth ){
               new_depth = top;
              // console.log("In the if: " + new_depth);
-              console.log("Before the change" + this._render_div.style.height);
+//              console.log("Before the change" + this._render_div.style.height);
               this._render_div.style.height = new_depth + 3* ch + "px";
-              console.log("After the change: " + this._render_div.style.height);
-
-              //child.style.height <= 
+//              console.log("After the change: " + this._render_div.style.height);
               row_depth = new_depth + ch;
             }
 
@@ -579,6 +595,7 @@ _move_to_top: function  (){
     }
     console.log("New row_depth: " + row_depth);
  //   this._render_div.style.height = row_depth;
+    parent.appendChild(this._render_div);
     this._render_div.style.display = 'block';
 },
 

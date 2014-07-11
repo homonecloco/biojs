@@ -59,6 +59,10 @@
   -webkit-user-select:'none';
    user-select:'none'
 }
+.bam_info_panel{
+  background-color: black;
+  color: white;
+}
 </style>
 
 	<title>Biojs.MyHelloWorld test</title>
@@ -82,10 +86,11 @@
      			dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/alignment", 
           reference:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/reference",
           base_width: bw,
-     			flanking_cache: flanking_cache     			//bam: "http://localhost:4567/test_chr.fasta/testu/alignment",
+     			flanking_cache: flanking_cache ,    			//bam: "http://localhost:4567/test_chr.fasta/testu/alignment",
      			//entry  : "chr_1",
      			//start  : 1, 
      			//end    : 500
+          info_panel: "footer"
   			}); 
 
   			var region_list = new Biojs.BAMRegionList({
