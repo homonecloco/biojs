@@ -276,9 +276,11 @@
                   current_base_span.style.width = container.opt.base_width + "px";
                   current_base_span.style.cssFloat = "left";
                   current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
+                  
                   last_div = current_base_span;
+                  current_base_span.title = this.len + this.pos;
                   this.len += 1;
-                  current_base_span.id = this.len;
+                  
                 }else if(key == "I"){
                   last_div.classList.add("bam_base_I");
                   changed = true;
@@ -292,6 +294,7 @@
                      current_base_span.style.cssFloat = "left";
                      current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
                      last_div = current_base_span;
+                     current_base_span.title = this.len + this.pos;
                      new_div.appendChild(current_base_span);
                      this.len += 1;
                      current_base_span.id = this.len;
@@ -393,8 +396,8 @@
     reference = this.reference;
     
     //TODO: Force the region to be up to a maximum size. 
-    reg = region.toString;
- 
+    reg = region.toString();
+    //console.log("Loading: " + reg);
 
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
   jQuery.ajax({
@@ -428,35 +431,44 @@ _select_chromosome: function(full_region){
 	
   var outter_div = document.createElement("div");
   outter_div.style.width = this.opt.width;
+
   outter_div.style.position = "absolute";
   outter_div.style.overflow = "hidden";
   outter_div.style.height = this.opt.height;
   var new_div = document.createElement("div");
   new_div.classList.add("ui-widget-content");
-
+  new_div.style.left = "0px";
   var grid_w = this.opt.base_width
   //jQuery(new_div).draggable({ axis: "x" });
+  var start_pos = -1; 
+  var self = this  ;
   jQuery(new_div).draggable({
     grid: [ 20, grid_w ] ,
+    scroll: true, 
+    
     start: function() {
-       // counts[ 0 ]++;
-        //updateCounterStatus( $start_counter, counts[ 0 ] );
-        top_pos = parseInt(new_div.style.top);
+        start_pos = parseInt(new_div.style.left);
+        console.log("Start: " + start_pos);
+        console.log("Region: " + self.visible_region.toString());
 
       },
+
       drag: function() {
        
       },
+
       stop: function() {
-        
+        var top_pos = parseInt(new_div.style.top);
+        var bottom_pos = parseInt(new_div.style.top) + parseInt(new_div.style.height) ;
+        var height = parseInt(new_div.style.height);
+        var left_pos = parseInt(new_div.style.left);
+        var drag_offset = left_pos-start_pos ;
+        var drag_offset_bases = drag_offset / self.opt.base_width;
+        self.visible_region.move(drag_offset_bases);
+        info_div.removeChild(info_div.lastChild);
+        info_div.appendChild(info_div.ownerDocument.createTextNode("Visible: " +  self.visible_region.toString()));
+       
 
-        top_pos = parseInt(new_div.style.top);
-        bottom_pos = parseInt(new_div.style.top) + parseInt(new_div.style.height) ;
-        height = parseInt(new_div.style.height);
-
-        console.log("top: "    + top_pos);
-        console.log("bottom: " + bottom_pos);
-        console.log("height: " + height);
         if(bottom_pos <= 50){
           new_div.style.top =  (50 - height ) + "px";
         }
@@ -466,22 +478,28 @@ _select_chromosome: function(full_region){
         //counts[ 2 ]++;
         //updateCounterStatus( $stop_counter, counts[ 2 ] );
       }
-
   });
+
   new_div.bam_container = this;
   new_div.left_offset = 0;
-
   this._render_div = new_div;    
-  
   outter_div.appendChild(new_div);
   this._container.append(outter_div);  
-  
+
+  var computedStyle = getComputedStyle(new_div, null);
+  var visible_bases = parseInt(computedStyle.width) / this.opt.base_width;
+
+  this.visible_region = this.parse_region(full_region);
+  vr = this.visible_region
+  this.visible_region.end = parseInt(visible_bases);
+  //alert(computedStyle.marginTop)
+  console.log(JSON.stringify(this.visible_region));
 
 //SETTING UP THE BOTTOM THING
   var info_div = document.createElement("div");
   info_div.style.width - this.opt.base_width;
   info_div.classList.add("bam_info_panel");
-  info_div.appendChild(info_div.ownerDocument.createTextNode("Info text"));
+  info_div.appendChild(info_div.ownerDocument.createTextNode("Visible: " +  this.visible_region.toString()));
   
   outer_info = document.getElementById(this.opt.info_panel);
   if(outer_info != null){
@@ -628,7 +646,11 @@ _BAMRegion = function _BAMRegion(entry, start, end) {
   this.start = parseInt(start,10);
   this.end = parseInt(end,10);
   this.toString = function() {
-    return  entry + ":" + start  + "-" + end;
+    return  this.entry + ":" + this.start  + "-" + this.end;
+  };
+  this.move = function(bases) {
+    this.end -= bases;
+    this.start -= bases;
   };
 } ;
 
