@@ -467,7 +467,8 @@ _select_chromosome: function(full_region){
         self.visible_region.move(drag_offset_bases);
         info_div.removeChild(info_div.lastChild);
         info_div.appendChild(info_div.ownerDocument.createTextNode("Visible: " +  self.visible_region.toString()));
-       
+        
+        self.load_region(self.visible_region);
 
         if(bottom_pos <= 50){
           new_div.style.top =  (50 - height ) + "px";
@@ -518,38 +519,7 @@ _drag_start: function (event) {
     _tmp_target = event.target;
 },
 
-_move_draged: function(render_div, offset, event){
 
-  console.log("From " +  _startX + " to " + event.clientX);
-  var diff_x =  event.clientX   - _startX  ;
-  var als_rend = render_div.children;
-  for(var i = 0; i < als_rend.length; i++) {
-    var local_left = parseInt(als_rend[i].offsetLeft , 10);
-    var new_pos = local_left + diff_x;
-    als_rend[i].style.left = new_pos + "px";
-
-  }
-  //var diff_y = event.clientX - parseInt(offset[0],10); 
-},
-
-_drag_over: function (event) { 
-    var offset;
-    offset = _bam_offset_data;
-    var dm = _tmp_target ;
-    var render_div =  _tmp_target ;
-    //render_div.bam_container._move_draged(render_div, offset, event);
-    event.preventDefault(); 
-    return false; 
-} ,
-_drop: function (event) { 
-    var offset;
-    offset = _bam_offset_data;  
-    var render_div =  _tmp_target ;
-    render_div.bam_container._move_draged(render_div, offset, event);
-    render_div.bam_container._move_to_top();
-    event.preventDefault();
-    return false;
-}, 
 
 _move_to_top: function  (){
   var top = 1; // top value for next row
