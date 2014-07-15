@@ -70,9 +70,25 @@
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMViewer.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMRegionList.js"></script>
+  <script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.wigExplorer.js"></script>
+
 	<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-1.10.2.js"></script>
 	<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-ui-1.10.4.custom.min.js"> </script>
-	<script language="JavaScript" type="text/javascript">
+  <script src="http://d3js.org/d3.v2.min.js" type="text/javascript"> </script>
+
+  <script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery.tooltip.js"></script>
+
+
+  <link rel="stylesheet" href="../../main/resources/dependencies/jquery/jquery-ui-1.10.4.custom.min.css" />
+  <link rel="stylesheet" href="../../main/resources/dependencies/jquery/jquery.tooltip.css">
+
+  <link rel="stylesheet" href="../../main/resources/css/biojs.wigExplorer.css">
+
+
+  <script language="JavaScript" type="text/javascript">
+
+
+
 		window.onload = function() {
 
 			var bw = 10;
@@ -103,7 +119,27 @@
           dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/list"
   			});  
 
+        var wig_instance;
+        var wig_select_container = {
+          dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/wig?",
+          target: "wig_viewer_1",
+          step_size: 10,
+          selectionBackgroundColor: 'steelblue',
+          setRegion: function(region){
+            var region_url = this.dataSet + "region="+ encodeURIComponent(region.toString()) +  "&step_size=" + this.step_size ;  
+            var wig_instance = new Biojs.wigExplorer({
+              target : this.target,
+              selectionBackgroundColor: this.selectionBackgroundColor,
+              dataSet: region_url, 
+              height:"100",
+              width:"100%"
+            });
+          }
+        }
+        
+        //http://localhost:4567/test_chr.fasta/testu/alignment?region=chr_1:1-100
   			region_list.add_region_callback(instance);
+        region_list.add_region_callback(wig_select_container);
 		};
 	</script>
 
@@ -114,10 +150,13 @@
 		<h1 style="margin-bottom:0;">BioJS SAMViewer mini-test</h1></div>
 		<div id="bam_list" style="background-color:#FFD700;height:600px;width:20%;float:left;">
 HERE GOES THE LIST</div>
-<div id="wig_viewer_1" style="height:200px;width:80%;background-color:#FF0000;float:right">
+<div id="wig_spacer_1" style="height:200px;width:80%;background-color:#FFFFFF;float:right">
+<div id="wig_viewer_1">
 BIGWIG WILL GO HERE</div>
-<div id="sequence" style="height:20px;width:80%;float:right">
-	The sequence will go here
+<div id="wig_bottom_spece_1" style="height:100px;float:right; backroudn-collor:#FF0000" ></div>
+</div>
+<div id="spacer_fix_me" style="height:100px;width:80%;float:right">
+	
 </div>
 <div id="bam_viewer_1" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:80%;float:right">
 BAM goes here</div>

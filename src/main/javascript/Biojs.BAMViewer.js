@@ -338,7 +338,7 @@
     },
 
     render_visible: function(){
-      var region = this.current_region;
+      var region = this.visible_region;
       var start = region.start - this.opt.flanking_cache;
       var canvas = this._render_div;
       if(start < 0){
@@ -448,9 +448,6 @@ _select_chromosome: function(full_region){
     
     start: function() {
         start_pos = parseInt(new_div.style.left);
-        console.log("Start: " + start_pos);
-        console.log("Region: " + self.visible_region.toString());
-
       },
 
       drag: function() {
@@ -462,7 +459,7 @@ _select_chromosome: function(full_region){
         var bottom_pos = parseInt(new_div.style.top) + parseInt(new_div.style.height) ;
         var height = parseInt(new_div.style.height);
         var left_pos = parseInt(new_div.style.left);
-        var drag_offset = left_pos-start_pos ;
+        var drag_offset = start_pos - left_pos;
         var drag_offset_bases = drag_offset / self.opt.base_width;
         self.visible_region.move(drag_offset_bases);
         info_div.removeChild(info_div.lastChild);
@@ -619,8 +616,8 @@ _BAMRegion = function _BAMRegion(entry, start, end) {
     return  this.entry + ":" + this.start  + "-" + this.end;
   };
   this.move = function(bases) {
-    this.end -= bases;
-    this.start -= bases;
+    this.end += bases;
+    this.start += bases;
   };
 } ;
 
