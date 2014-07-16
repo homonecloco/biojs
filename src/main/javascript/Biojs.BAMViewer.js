@@ -386,17 +386,54 @@
         //alert(JSON.stringify( this.alignments ));
     },
 
+    get_overlapping_region: function(region){
+      var out = null;
+      for (var i = this.loaded_regions.length - 1; i >= 0; i--) {
+        if(this.loaded_regions[i].overlaps(region)){
+          out = this.loaded_regions[i];
+          i = 0;
+          console.log("found overlapping");
+        }
+      };
+      return out;
+    },
+
+    add_overlapping_region: function(region){
+
+      console.log("[add_overlapping_region]The region:" + JSON.stringify(region));
+      
+      for (var i = this.loaded_regions.length - 1; i >= 0; i--) {
+        if(this.loaded_regions[i].overlaps ){
+          this.loaded_regions[i] = this.loaded_regions[i].joinRegion(region);
+          return;
+        }
+      };
+
+      this.loaded_regions[this.loaded_regions.length] = region.clone(); 
+      console.log("The loaded regions:");
+      console.log(JSON.stringify(this.loaded_regions));
+    },
+
   /**
   * Loads a region and stores it in the cache 
   */
   load_region: function(region){
     //alert(self.dataSet);
-
+    var added_reg = region;
     //alert(this.dataSet);
-    reference = this.reference;
+    var reference = this.reference;
     
-    //TODO: Force the region to be up to a maximum size. 
-    reg = region.toString();
+    var overlapping_region = this.get_overlapping_region(region);
+    if(overlapping_region != null){
+      overlapping_region = overlapping_region.getRegionComplement(region);
+      added_reg = overlapping_region;
+    }
+
+    if(added_reg == null){
+      return; //Already loaded. 
+    }
+    var  reg = added_reg.toString();   
+   
     //console.log("Loading: " + reg);
 
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
@@ -407,9 +444,10 @@
     dataType: "text",
     container: this,
     success: function (data) {
-      correct = true
+      correct = true;
       reads = this.container.parse_sam(data);
       if(reads.length > 0){
+        this.container.add_overlapping_region(added_reg);
         this.container.add_alignments(reads);
         this.container.render_visible();
         this.container._move_to_top();
@@ -427,6 +465,7 @@
 _select_chromosome: function(full_region){
   this._container.empty();
   this.alignments = {};
+  this.loaded_regions =  new Array();
   this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
 	
   var outter_div = document.createElement("div");
@@ -594,13 +633,10 @@ setRegion: function(region){
 
    local_width=this._render_div.clientWidth;
 
-   //alert("width: " + local_width);
    region_end = Math.ceil( local_width/this.opt.base_width);
-   //alert("region_end: " + region_end);
    reg.end = reg.start + region_end;
    console.log(reg.start +  ":" + region_end);
    this._container.reg;
-   //alert(JSON.stringify(reg));
    this.current_region = reg;
    this.load_region(reg);
  }
@@ -615,9 +651,85 @@ _BAMRegion = function _BAMRegion(entry, start, end) {
   this.toString = function() {
     return  this.entry + ":" + this.start  + "-" + this.end;
   };
+  this.clone = function(){
+    return new _BAMRegion(this.entry, this.start, this.end);
+  };
   this.move = function(bases) {
     this.end += bases;
     this.start += bases;
+  };
+  this.overlaps = function(other){
+
+
+    if(other.entry != this.entry){
+      console.log("wrong entry");
+      return false;
+    }
+
+    if(other.start >= this.start && other.start <= this.end){
+      console.log("overlaps start");
+      return true;
+    }
+    if(other.end <= this.start &&  other.end >= this.end){
+       console.log("overlaps end");
+      return true;
+    }
+    return false;
+  };
+
+  this.subset = function(other){
+    if(other.start >= this.start && other.end <= this.end){
+      return true;
+    }
+    return false;
+  };
+
+  this.joinRegion = function(other){
+    out = this.clone();
+
+    if(other.start < out.start){
+      out.start = other.start;
+    }
+
+    if(other.end > out.end){
+      out.end = other.end;
+    }
+
+    return out;
+  };
+
+  //This returns the region that is missing from the cache
+  this.getRegionComplement = function(other){
+
+    //console.log("getRegionComplement comparing: ");
+    //console.log(JSON.stringify(other));
+    //console.log(JSON.stringify(this));
+    var  out = other.clone();
+    if (!this.overlaps(other)){
+     // console.log("Doesnt overlap!");
+      return out;
+    }
+
+    if(this.subset(other)){
+      //console.log("other is a subset");
+      return null;
+    }
+    if(other.subset(this)){
+      //console.log("this is a subset");
+      return null; //A null tells you don't need to load again. 
+    }
+    
+    if(other.start < this.start){
+      //console.log("other.start < this.start");
+      out.end = this.start;
+    }
+    
+    if (other.end > this.end){
+      //console.log("other.end < this.end");
+      out.start = this.end;
+    }
+    return out;
+
   };
 } ;
 

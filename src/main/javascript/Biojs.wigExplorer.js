@@ -513,7 +513,7 @@ Biojs.wigExplorer = Biojs.extend(
                         for (var i = 0; i < data_len; i++) {
                             if (data_split[i].indexOf("chrom") >= 0) {
                                 var line = data_split[i].split(/\s+/);
-                                console.log(JSON.stringify(line));
+                                //console.log(JSON.stringify(line));
                                 var chr = data_split[i].split(/\s+/)[1].split("=")[1];
                                 flag = false;
 
@@ -797,7 +797,7 @@ Biojs.wigExplorer = Biojs.extend(
                         .attr('stroke', function () {
                             return "black";
                         });
-                    console.log(JSON.stringify(pathinfo));
+                    //console.log(JSON.stringify(pathinfo));
                     //draw path from calculated chart axis
                     path.enter().append("svg:path")
                         .attr("width", 200)
