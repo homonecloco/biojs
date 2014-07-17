@@ -4,99 +4,41 @@
 
 	<link rel="stylesheet"  charset="utf-8" type="text/css" href="/biojs/main/resources/css/Biojs.BAMViewer.css"> </link>
 	<style type="text/css">
-	.bam_base {
-   float: left !important;
-}
-
-.bam_base_A {
-   background-color:#FFFF66 ;
-}
-
-
-.bam_base_C {
-   background-color:#47D147;
-   color: black;
-}
-
-.bam_base_G {
-   background-color:#3399FF;
-   color: black;
-}
-
-.bam_base_T {
-   background-color:#FF704D;
-   color: black;
-}
-
-.bam_base_N {
-   background-color:black;
-   color: white;
-}
-
-.bam_base_I{
-   box-sizing:border-box;
-   -moz-box-sizing:border-box;
-   -webkit-box-sizing:border-box;
-   border-style:solid;
-   border-color:red;
-   border-width: 1px;
-}
-
-.bam_base_D{
-   background-color:white;
-   color: black;
-}
-
-.bam_forward {
-   text-transform:uppercase;
-}
-.bam_reverse {
-   text-transform:lowercase;
-}
-
-.bam_container{
-  -moz-user-select:'none';
-  -webkit-user-select:'none';
-   user-select:'none'
-}
-.bam_info_panel{
-  background-color: black;
-  color: white;
-}
+	
 </style>
 
-	<title>Biojs.MyHelloWorld test</title>
+<title>Biojs.MyHelloWorld test</title>
 
-	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.js"></script>
-	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMViewer.js"></script>
-	<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMRegionList.js"></script>
-  <script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.wigExplorer.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMViewer.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMRegionList.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.BAMRegionSelector.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../main/javascript/Biojs.wigExplorer.js"></script>
 
-	<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-1.10.2.js"></script>
-	<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-ui-1.10.4.custom.min.js"> </script>
-  <script src="http://d3js.org/d3.v2.min.js" type="text/javascript"> </script>
+<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-1.10.2.js"></script>
+<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery-ui-1.10.4.custom.min.js"> </script>
+<script src="http://d3js.org/d3.v2.min.js" type="text/javascript"> </script>
 
-  <script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery.tooltip.js"></script>
-
-
-  <link rel="stylesheet" href="../../main/resources/dependencies/jquery/jquery-ui-1.10.4.custom.min.css" />
-  <link rel="stylesheet" href="../../main/resources/dependencies/jquery/jquery.tooltip.css">
-
-  <link rel="stylesheet" href="../../main/resources/css/biojs.wigExplorer.css">
+<script language="JavaScript" type="text/javascript" src="../../main/resources/dependencies/jquery/jquery.tooltip.js"></script>
 
 
-  <script language="JavaScript" type="text/javascript">
+<link rel="stylesheet" href="../../main/resources/dependencies/jquery/jquery-ui-1.10.4.custom.min.css" />
+<link rel="stylesheet" href="../../main/resources/dependencies/jquery/jquery.tooltip.css">
+<link rel="stylesheet" href="../../main/resources/css/biojs.wigExplorer.css">
+
+
+<script language="JavaScript" type="text/javascript">
 
 
 
-		window.onload = function() {
+window.onload = function() {
 
-			var bw = 10;
-			var flanking_cache = 100;
-			
-			var instance = new Biojs.BAMViewer({
- 			    target : "bam_viewer_1",
-     			selectionBackgroundColor : '#99FF00',
+ var bw = 10;
+ var flanking_cache = 100;
+
+ var instance = new Biojs.BAMViewer({
+  target : "bam_viewer_1",
+  selectionBackgroundColor : '#99FF00',
      			//dataSet: "http://localhost:4567/test_chr.fasta/testu/alignment", 
      			//reference: "http://localhost:4567/test_chr.fasta/testu/reference",
      			dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/alignment", 
@@ -107,64 +49,92 @@
      			//start  : 1, 
      			//end    : 500
           info_panel: "footer"
-  			}); 
+        }); 
 
-  			var region_list = new Biojs.BAMRegionList({
- 			    target : "bam_list",
-     			selectionBackgroundColor : 'gray',
-     			base_width: bw,
+ var instance2 = new Biojs.BAMViewer({
+  target : "bam_viewer_2",
+  selectionBackgroundColor : '#99FF00',
+          //dataSet: "http://localhost:4567/test_chr.fasta/testu/alignment", 
+          //reference: "http://localhost:4567/test_chr.fasta/testu/reference",
+          dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1718.uniq/alignment", 
+          reference:"http://localhost:4567/test_reference.fa/Sample_LIB1718.uniq/reference",
+          base_width: bw,
+          flanking_cache: flanking_cache ,          //bam: "http://localhost:4567/test_chr.fasta/testu/alignment",
+          //entry  : "chr_1",
+          //start  : 1, 
+          //end    : 500
+          info_panel: "footer"
+        }); 
+
+
+ var region_list = new Biojs.BAMRegionList({
+  target : "bam_list",
+  selectionBackgroundColor : 'gray',
+  base_width: bw,
      			//reference: "http://localhost:4567/test_chr.fasta/testu/reference",
      			//dataSet: "http://localhost:4567/test_chr.fasta/testu/list" //This will be optional in the future.  
           reference:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/reference",
           dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/list"
-  			});  
+        });  
 
-        var wig_instance;
-        var wig_select_container = {
-          dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/wig?",
-          target: "wig_viewer_1",
-          step_size: 10,
-          selectionBackgroundColor: 'steelblue',
-          setRegion: function(region){
-            var region_url = this.dataSet + "region="+ encodeURIComponent(region.toString()) +  "&step_size=" + this.step_size ;  
-            var wig_instance = new Biojs.wigExplorer({
-              target : this.target,
-              selectionBackgroundColor: this.selectionBackgroundColor,
-              dataSet: region_url, 
-              height:"100",
-              width:"100%"
-            });
-          }
-        }
-        
+var region_selector = new Biojs.BAMRegionSelector({
+  target :"selected_region", 
+});
+
+ var wig_instance;
+ var wig_select_container = {
+  dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/wig?",
+  target: "wig_viewer_1",
+  step_size: 10,
+  selectionBackgroundColor: 'steelblue',
+  setRegion: function(region){
+    var region_url = this.dataSet + "region="+ encodeURIComponent(region.toString()) +  "&step_size=" + this.step_size ;  
+    var wig_instance = new Biojs.wigExplorer({
+      target : this.target,
+      selectionBackgroundColor: this.selectionBackgroundColor,
+      dataSet: region_url, 
+      height:"100",
+      width:"100%"
+    });
+  }
+};
+
+
+        //Notify the list of changes in region. 
         //http://localhost:4567/test_chr.fasta/testu/alignment?region=chr_1:1-100
-  			region_list.add_region_callback(instance);
+        region_list.add_region_callback(instance);
+        region_list.add_region_callback(instance2);
         region_list.add_region_callback(wig_select_container);
-		};
-	</script>
+        region_list.add_region_callback(region_selector);
 
-	</head>
-	<body>
+        //connecting the slider with the VIEWER
+        instance.add_selected_change_callback(region_selector);
+        instance2.add_selected_change_callback(region_selector);
+      };
+      </script>
 
-		<div id="header" style="background-color:#FFA500;">
-		<h1 style="margin-bottom:0;">BioJS SAMViewer mini-test</h1></div>
-		<div id="bam_list" style="background-color:#FFD700;height:600px;width:20%;float:left;">
-HERE GOES THE LIST</div>
-<div id="wig_spacer_1" style="height:200px;width:80%;background-color:#FFFFFF;float:right">
-<div id="wig_viewer_1">
-BIGWIG WILL GO HERE</div>
-<div id="wig_bottom_spece_1" style="height:100px;float:right; backroudn-collor:#FF0000" ></div>
-</div>
-<div id="spacer_fix_me" style="height:100px;width:80%;float:right">
-	
-</div>
-<div id="bam_viewer_1" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:80%;float:right">
-BAM goes here</div>
+    </head>
+    <body>
 
-<div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
-BioJS BAMViewer.</div>
+      <div id="header" style="background-color:#FFA500;">
+        <h1 style="margin-bottom:0;">BioJS SAMViewer mini-test</h1></div>
+        <div id="bam_list" style="background-color:#FFD700;height:600px;width:20%;float:left;">
+          HERE GOES THE LIST</div> 
+          <div id="wig_spacer_1" style="height:200px;width:80%;background-color:#FFFFFF;float:right">
+            <div id="wig_viewer_1">
+              BIGWIG WILL GO HERE</div>
+              <div id="wig_bottom_spece_1" style="height:100px;float:right; backroudn-collor:#FF0000" ></div>
+            </div>
+            <div id="spacer_fix_me" style="height:100px;width:80%;float:right"></div>
+            <div id="selected_region" style="height:80px;width:80%;float:right"></div>
+            <div id="bam_viewer_1" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:30%;float:right">
+              BAM goes here</div>
+              <div id="bam_viewer_2" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:30%;float:right">
+              BAM goes here</div>
+              <div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
+                BioJS BAMViewer.</div>
 
-</div>
-	
-	</body>
-</html>
+              </div>
+
+            </body>
+            </html>

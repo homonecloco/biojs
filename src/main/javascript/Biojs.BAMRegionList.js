@@ -40,17 +40,17 @@
  * });	
  * 
  */
-Biojs.BAMRegionList = Biojs.extend (
-/** @lends Biojs.HelloWorld# */
-{
-  constructor: function (options) {
+ Biojs.BAMRegionList = Biojs.extend (
+  /** @lends Biojs.HelloWorld# */
+  {
+    constructor: function (options) {
 	  // In JavaScript ÒthisÓ always refers to the ÒownerÓ of the function we're executing (http://www.quirksmode.org/js/this.html)
 	  // Let's preserve the reference to 'this' through the variable self. In this way, we can invoke/execute 
 	  // our component instead of the object where 'this' is being invoked/executed.
 	  var self = this;
-      this.dataSet = options.dataSet;
-	  this.reference = options.reference;
-	  
+    this.dataSet = options.dataSet;
+    this.reference = options.reference;
+    
 
 	  // For practical use, create an object with the main DIV container 
 	  // to be used in all of the code of our component
@@ -61,8 +61,8 @@ Biojs.BAMRegionList = Biojs.extend (
 		  'font-family': self.opt.fontFamily, // this is one example of the use of self instead of this
 		  'background-color': self.opt.backgroundColor,
 		  'color': self.opt.fontColor	  
-	  });
-	
+   });
+   
 
 	  //list of functions to calback on selection change. 
 	  this.callbacks = [];
@@ -81,20 +81,20 @@ Biojs.BAMRegionList = Biojs.extend (
    *  Default values for the options
    *  @name Biojs.HelloWorld-opt
    */
-  opt: {
+   opt: {
      target: "YourOwnDivId",
      fontFamily: '"Andale mono", courier, monospace',
      fontColor: "black",
      backgroundColor: "white",
      selectionFontColor: "blak",
      selectionBackgroundColor: "gray"
-  },
-  
+   },
+   
   /**
    * Array containing the supported event names
    * @name Biojs.HelloWorld-eventTypes
    */
-  eventTypes : [
+   eventTypes : [
 	/**
 	 * @name Biojs.HelloWorld#onClick
 	 * @event
@@ -112,12 +112,12 @@ Biojs.BAMRegionList = Biojs.extend (
 	 * */
 	 "onClick",
 	 
-  
-  ], 
-  
-  
-  
-  parse_list: function (data){
+   
+   ], 
+   
+   
+   
+   parse_list: function (data){
   	//TODO: parse the lines and make sure they are actual regions. 
   	return   data.split("\n"); 
   },
@@ -140,54 +140,54 @@ Biojs.BAMRegionList = Biojs.extend (
 
     //alert(this.dataSet);
     reference = this.reference;
-  
+    
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
-    jQuery.ajax({
-                type: "GET",
-                url: this.dataSet,
-                data: { bam: this.bam , ref: this.reference } ,
-                dataType: "text",
-                container: this,
-                success: function (data) {
-                    correct = true
-                    regions = this.container.parse_list(data);
-                    if(regions){
-                      cont = jQuery("#"+this.container.opt.target);
-                      cont.empty();
-                      
-                      var arrayLength = regions.length;
-						for (var i = 0; i < arrayLength; i++) {
-							var element = document.createElement("div");
-							element.region = regions[i] 
-							var newContent = document.createTextNode(regions[i]); 
-							element.id = this.container.opt.target + "_div_" + regions[i];
-  							element.bam_list = this.container
-  							element.appendChild(newContent);
-							element.onclick = function(evnt){
-								target=evnt.currentTarget;
-								list_node=target.parentNode;
-								local_container = target.bam_list
-								if ('undefined' !== typeof list_node.selected_node) {
-									list_node.selected_node.style.backgroundColor=local_container.opt.backgroundColor;
-								}
-								list_node.selected_node=target;
-								local_container._region_click(target.region);
-								target.style.backgroundColor = local_container.opt.selectionBackgroundColor;
-							};
+  jQuery.ajax({
+    type: "GET",
+    url: this.dataSet,
+    data: { bam: this.bam , ref: this.reference } ,
+    dataType: "text",
+    container: this,
+    success: function (data) {
+      correct = true
+      regions = this.container.parse_list(data);
+      if(regions){
+        cont = jQuery("#"+this.container.opt.target);
+        cont.empty();
+        
+        var arrayLength = regions.length;
+        for (var i = 0; i < arrayLength; i++) {
+         var element = document.createElement("div");
+         element.region = regions[i] 
+         var newContent = document.createTextNode(regions[i]); 
+         element.id = this.container.opt.target + "_div_" + regions[i];
+         element.bam_list = this.container
+         element.appendChild(newContent);
+         element.onclick = function(evnt){
+          target=evnt.currentTarget;
+          list_node=target.parentNode;
+          local_container = target.bam_list
+          if ('undefined' !== typeof list_node.selected_node) {
+           list_node.selected_node.style.backgroundColor=local_container.opt.backgroundColor;
+         }
+         list_node.selected_node=target;
+         local_container._region_click(target.region);
+         target.style.backgroundColor = local_container.opt.selectionBackgroundColor;
+       };
 
-							cont.append(element);
-						}
-                    } else {
-                        alert("Unknown format detected")
-                    }
-
-                },
-                error: function (qXHR, textStatus, errorThrown) {
-                    alert(textStatus);
-                }
-            });
+       cont.append(element);
+     }
+   } else {
+    alert("Unknown format detected")
   }
-  
+
+},
+error: function (qXHR, textStatus, errorThrown) {
+  alert(textStatus);
+}
+});
+}
+
 });
 
 

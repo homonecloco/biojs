@@ -47,3 +47,24 @@
 .bam_reverse {
    text-transform:lowercase;
 }
+
+.bam_base {
+   float: left !important;
+ }
+
+ .bam_forward {
+   text-transform:uppercase;
+ }
+ .bam_reverse {
+   text-transform:lowercase;
+ }
+
+ .bam_container{
+  -moz-user-select:'none';
+  -webkit-user-select:'none';
+  user-select:'none'
+}
+.bam_info_panel{
+  background-color: black;
+  color: white;
+}
