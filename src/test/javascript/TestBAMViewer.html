@@ -110,6 +110,9 @@ var region_selector = new Biojs.BAMRegionSelector({
         //connecting the slider with the VIEWER
         instance.add_selected_change_callback(region_selector);
         instance2.add_selected_change_callback(region_selector);
+
+        region_selector.add_center_callback(instance);
+        region_selector.add_center_callback(instance2);
       };
       </script>
 

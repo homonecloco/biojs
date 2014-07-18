@@ -345,6 +345,11 @@
       }
 
     },
+
+    visible_middle: function(){
+       var middle = (this.visible_region.start + this.visible_region.end ) / 2; 
+       return middle;
+    },
     render_visible: function(){
 
       var region = this.visible_region.expand_flanking_region(this.opt.flanking_size);;
@@ -384,9 +389,6 @@
       this._render_div = canvas;
 
 
-      //canvas.style.display='none';
-      //canvas.style.offsetHeight;
-      //canvas.style.display='block';
     },
 
 
@@ -561,8 +563,8 @@ this._render_div = new_div;
 outter_div.appendChild(new_div);
 this._container.append(outter_div);  
 
-var computedStyle = getComputedStyle(new_div, null);
-var visible_bases = parseInt(computedStyle.width) / this.opt.base_width;
+
+var visible_bases = this.visible_bases();
 
 this.visible_region = this.parse_region(full_region);
 vr = this.visible_region
@@ -584,13 +586,53 @@ if(outer_info != null){
 
 }, 
 
+visible_bases: function(){
+  var computedStyle = getComputedStyle(this._render_div, null);
+  var visible_bases = Math.round(parseInt(computedStyle.width) / this.opt.base_width);
+  return visible_bases;
+},
+
+move_rendered_div: function(offset){
+  old_left = parseInt(this._render_div.style.left);
+  this._render_div.style.left = old_left - (offset * this.opt.base_width) + "px";
+},
+
 set_central_base: function(position){
   var pos = parseInt(position);
+  console.log("Centering: "  + this.opt.target + ":" + position);
+  console.log("Full_region: " + JSON.stringify(this.full_region));
   if(! this.full_region.valid_position(pos)){
     alert("Invalid position!");
     return;
   }
 
+  var visible_bases = this.visible_bases();
+  var flank_size = Math.round(visible_bases/2);
+  new_region = this.visible_region.clone();
+  new_region.start = pos - flank_size;
+  new_region.end = pos + flank_size;
+
+  
+
+  //TODO: improve info_div;
+  //info_div.removeChild(info_div.lastChild);
+  //info_div.appendChild(info_div.ownerDocument.createTextNode("Visible: " +  self.visible_region.toString()));
+
+  if(!this.rendered_region.subset(new_region) ){
+    this.visible_region = new_region;
+    this.load_region(this.visible_region);
+  }else{
+    var mid =this.visible_middle() ;
+    console.log("Moving: " + mid + " to " + pos);
+    var drag_offset_bases = pos-mid ;
+
+    console.log("Bases to move: " + drag_offset_bases); 
+    console.log(this.visible_region.toString());
+    this.visible_region.move(drag_offset_bases);
+    this.move_rendered_div(drag_offset_bases);
+    console.log(this.visible_region.toString());
+
+  }
 
 },
 
@@ -714,7 +756,15 @@ _BAMRegion = function _BAMRegion(entry, start, end) {
     return true;
   }
   return false;
-};
+}; 
+
+this.valid_position = function(pos){
+  if(this.start <= pos && this.end >= pos){
+    return true;
+  }else{
+    return false;
+  }
+}
 
 this.expand_flanking_region = function(flanking_size){
   out = this.clone();
@@ -724,6 +774,11 @@ this.expand_flanking_region = function(flanking_size){
     out.start = 1;
   }
   return out;
+};
+
+this.middle = function(){
+  var middle = (this.start + this.end ) / 2; 
+  return middle;
 };
 
 this.joinRegion = function(other){
