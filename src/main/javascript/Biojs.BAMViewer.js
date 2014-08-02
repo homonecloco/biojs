@@ -118,7 +118,7 @@
     width: "80%",
     height: "200px",
     float_bam: "right",
-    base_width: 10,
+    new_pos: 10,
     default_read_background:"blue", 
     flanking_size: 300
   },
@@ -306,6 +306,7 @@
               }
               new_div.style.width = container.opt.base_width * this.len + "px"; 
               this.div = new_div;
+ //             console.log("new_div len:" + len);
               return new_div;
             }};
 
@@ -352,12 +353,25 @@
        var middle = (this.visible_region.start + this.visible_region.end ) / 2; 
        return middle;
     },
+
+    fill_canvas_aux: function(aln , arr, offset){
+      var start = aln.pos - offset;
+      var end = start + aln.len;
+      console.log("filling canvas: " + start +"-" + end);
+      for(var i=start;i<end;i++){
+        arr[i]++;
+      }
+
+    },
     render_visible: function(){
 
       var region = this.visible_region.expand_flanking_region(this.opt.flanking_size);;
       this.rendered_region = region;
       
       var start = region.start - this.opt.flanking_cache;
+      var end = region.end + this.opt.flanking_cache ;
+      var size = end - start;
+      var rendered_positions = Array.apply(null, new Array(size)).map(Number.prototype.valueOf,0);
       this._render_div.left_offset = this.visible_region.start;
       
       var canvas = this._render_div.cloneNode();
@@ -368,7 +382,7 @@
       }
 
       //alert(JSON.stringify(this.alignments));
-      for(i = start; i < region.end + this.opt.flanking_cache ; i++){
+      for(i = start; i < end; i++){
         if("undefined" !== typeof this.alignments[i]){
          // alert(JSON.stringify(this.alignments[i]) + " i:" + i);
          var current_alignments = this.alignments[i];
@@ -381,6 +395,12 @@
             var base_offset = aln.pos - this._render_div.left_offset - 1;
             var n_pos = ( base_offset) * container.opt.base_width; 
             aln.div.style.left = n_pos + "px";
+            var l_off = i - start;
+            console.log("l_off: " + l_off);
+            var new_pos = rendered_positions[l_off] * parseInt(this.opt.fontSize);
+            console.log("new_pos:" + new_pos);
+            aln.div.style.top =  new_pos + "px"; 
+            this.fill_canvas_aux(aln, rendered_positions, start);
             canvas.appendChild(aln.div);
           }
         }
@@ -481,7 +501,7 @@
 
     if(added_reg == null){
       this.render_visible();
-      this._move_to_top();
+     // this._move_to_top();
       return; //Already loaded. 
     }
     var  reg = added_reg.toString();   
@@ -505,7 +525,7 @@
         alert("Unknown format detected");
       }
       this.container.render_visible();
-      this.container._move_to_top();
+     //this.container._move_to_top();
 
     },
     error: function (qXHR, textStatus, errorThrown) {
