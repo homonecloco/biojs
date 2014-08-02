@@ -357,7 +357,7 @@
     fill_canvas_aux: function(aln , arr, offset){
       var start = aln.pos - offset;
       var end = start + aln.len;
-      console.log("filling canvas: " + start +"-" + end);
+     // console.log("filling canvas: " + start +"-" + end);
       for(var i=start;i<end;i++){
         arr[i]++;
       }
@@ -396,9 +396,7 @@
             var n_pos = ( base_offset) * container.opt.base_width; 
             aln.div.style.left = n_pos + "px";
             var l_off = i - start;
-            console.log("l_off: " + l_off);
             var new_pos = rendered_positions[l_off] * parseInt(this.opt.fontSize);
-            console.log("new_pos:" + new_pos);
             aln.div.style.top =  new_pos + "px"; 
             this.fill_canvas_aux(aln, rendered_positions, start);
             canvas.appendChild(aln.div);
