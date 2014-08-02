@@ -87,7 +87,10 @@
     this.reference = options.reference;
 
     //An array with all the alignments. Each position represents a position in the chromosome. 
-    this.alignments = {}
+    this.alignments = {};
+
+    //A reverse hash to contain the added sequences
+    this.sequences = {};
     
     //list of functions to calback on selection change. 
     this.visible_change_callbacks = [];
@@ -179,12 +182,10 @@
 
     var lines=sam.split("\n"); 
     var result = [];
-
     for(var i=0;i<lines.length;i++){
       obj = this.parse_sam_line(lines[i]);
       result.push(obj);
     }
-
     return result; //JavaScript object
     //return JSON.stringify(result); //JSON
   },
@@ -226,6 +227,7 @@
       tlen  : parseInt(currentline[8],10) ,
       seq   : currentline[9] ,
       qual  : currentline[10] ,
+      duplicates : 0,
       len   : 100, //TODO: change this to use the cigar.  
       has_flag : function (f){ 
         f = parseInt(f);
@@ -394,19 +396,43 @@
 
     add_alignments: function(alignments){
       var als = this.alignments;
+      var seqs = this.sequences;
       var added = 0;
+      var duplicates = 0;
       for(var i = 0; i < alignments.length; i++){
         var aln = alignments[i];
         if("undefined" === typeof als[aln.pos]){
           als[aln.pos] = {}; 
         }
-        var current_alignments = als[aln.pos];
+        if("undefined" === typeof seqs[aln.pos]){
+          seqs[aln.pos] = {}; 
+        }
+        var current_alignments = als[aln.pos]; 
         if("undefined" ===  typeof als[aln.pos][aln.qname]){
-          added ++;
-          als[aln.pos][aln.qname] = aln;
+          //added ++;
+          //als[aln.pos][aln.qname] = aln;
+          var aln_pos_hash = als[aln.pos];
+          var seq_pos_hash = seqs[aln.pos];
+          var add = false;
+          if("undefined" ===  typeof seq_pos_hash[aln.seq] ){
+            add = true;
+          }
+          
+          if(add){
+            added ++;
+            als[aln.pos][aln.qname] = aln;
+            seqs[aln.pos][aln.seq] = aln;
+          }else{
+            duplicates ++;
+            seqs[aln.pos][aln.seq].duplicates ++;
+          }
+
+          //TODO add a counter of how many are repeated!. */
           //alert(JSON.stringify( current_alignments[aln.qname] ));
         }
       }
+
+      console.log("[add_alignments]: Added: " + added + "PCR duplicate: " + duplicates);
         //alert(JSON.stringify( this.alignments ));
       },
 
