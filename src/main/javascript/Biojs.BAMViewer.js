@@ -354,15 +354,38 @@
        return middle;
     },
 
-    fill_canvas_aux: function(aln , arr, offset){
+    fill_canvas_aux: function(aln , arr, offset, index){
+    
+      if("undefined" === typeof arr[index] ){
+        var region_rend = this.rendered_region;
+        var size  = region_rend.end - region_rend.start;
+
+        arr[index]= Array.apply(null, new Array(size)).map(Number.prototype.valueOf,0);
+      }
+      
+
       var start = aln.pos - offset;
       var end = start + aln.len;
      // console.log("filling canvas: " + start +"-" + end);
       for(var i=start;i<end;i++){
-        arr[i]++;
+        arr[index][i]++;
       }
 
     },
+
+    find_empty_start: function(aln, arr, offset){
+      var start = aln.pos - offset;
+      var arr_size = arr.length;
+      var i = 0; 
+
+      for(; i < arr_size; i++){
+        if(arr[i][start] == 0 ){
+          break;
+        }
+      }
+      return i;
+    },
+
     render_visible: function(){
 
       var region = this.visible_region.expand_flanking_region(this.opt.flanking_size);;
@@ -371,7 +394,8 @@
       var start = region.start - this.opt.flanking_cache;
       var end = region.end + this.opt.flanking_cache ;
       var size = end - start;
-      var rendered_positions = Array.apply(null, new Array(size)).map(Number.prototype.valueOf,0);
+      //var rendered_positions = Array.apply(null, new Array(size)).map(Number.prototype.valueOf,0);
+      var rendered_positions =  [];
       this._render_div.left_offset = this.visible_region.start;
       
       var canvas = this._render_div.cloneNode();
@@ -396,9 +420,10 @@
             var n_pos = ( base_offset) * container.opt.base_width; 
             aln.div.style.left = n_pos + "px";
             var l_off = i - start;
-            var new_pos = rendered_positions[l_off] * parseInt(this.opt.fontSize);
+            var start_index = this.find_empty_start(aln, rendered_positions, start);
+            var new_pos = start_index * parseInt(this.opt.fontSize);
             aln.div.style.top =  new_pos + "px"; 
-            this.fill_canvas_aux(aln, rendered_positions, start);
+            this.fill_canvas_aux(aln, rendered_positions, start, start_index);
             canvas.appendChild(aln.div);
           }
         }
