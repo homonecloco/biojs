@@ -215,6 +215,9 @@
     container = this;
     //console.log("Parsing flagg:" +  parseInt(currentline[1],10));
 
+    var sequence = currentline[9] ;
+    //console.log("Sequence: " + sequence);
+    //console.log(sam_line);
     var obj = {
       qname : currentline[0] ,
       flags : parseInt(currentline[1],10),
@@ -225,10 +228,10 @@
       rnext : currentline[6] ,
       pnext : parseInt(currentline[7],10),
       tlen  : parseInt(currentline[8],10) ,
-      seq   : currentline[9] ,
+      seq   : sequence,
       qual  : currentline[10] ,
-      duplicates : 0,
-      len   : 100, //TODO: change this to use the cigar.  
+      duplicates : 1,
+      len   : 100,   
       has_flag : function (f){ 
         f = parseInt(f);
         return (this.flags & f) == f ;
@@ -236,11 +239,11 @@
       forward: function(){return  this.has_flag(16);},
       build_div: function(){
         var new_div = document.createElement("div");
-        new_div.style.height = container.opt.fontSize ;
+        new_div.style.height = (parseInt( container.opt.fontSize) * this.duplicates)  + "px";
         new_div.style.position = "absolute";
         n_pos = ( this.pos - 1) * container.opt.base_width;
         new_div.style.left = n_pos + "px";
-
+        new_div.id = this.qname;
         if(this.forward()){
           new_div.classList.add("bam_forward");
         }else{
@@ -355,21 +358,23 @@
     },
 
     fill_canvas_aux: function(aln , arr, offset, index){
-    
-      if("undefined" === typeof arr[index] ){
-        var region_rend = this.rendered_region;
-        var size  = region_rend.end - region_rend.start;
-
-        arr[index]= Array.apply(null, new Array(size)).map(Number.prototype.valueOf,0);
+      var dups = aln.duplicates;
+      console.log ("Filling duplicates: " + dups);  
+      for(var j = 0; j < dups; j++){
+        var local_index = index + j;
+        if("undefined" === typeof arr[local_index] ){
+          var region_rend = this.rendered_region;
+          var size  = region_rend.end - region_rend.start;
+          arr[local_index]= Array.apply(null, new Array(size)).map(Number.prototype.valueOf,0);
+        }
+        var start = aln.pos - offset;
+        var end = start + aln.len;
+         console.log("filling canvas: " + start +"-" + end + " @ " + local_index);
+        for(var i=start;i<end;i++){
+         arr[local_index][i] ++;  
+        }
       }
-      
 
-      var start = aln.pos - offset;
-      var end = start + aln.len;
-     // console.log("filling canvas: " + start +"-" + end);
-      for(var i=start;i<end;i++){
-        arr[index][i]++;
-      }
 
     },
 
@@ -377,10 +382,27 @@
       var start = aln.pos - offset;
       var arr_size = arr.length;
       var i = 0; 
-
-      for(; i < arr_size; i++){
+      var dups = aln.duplicates;
+      
+      var found = false
+      var out = 0;
+      for(; i < arr_size && !found; i++){
         if(arr[i][start] == 0 ){
-          break;
+          found = true;
+          out = i;
+
+          for(var j = 0; j < dups; j++){
+            var local_index = i + j;
+            if("undefined" != typeof arr[local_index]  && arr[local_index][start] != 0 ){
+              found = false;
+            }
+          }
+          
+          if(found){
+            return i;
+          }
+         
+          //break;
         }
       }
       return i;

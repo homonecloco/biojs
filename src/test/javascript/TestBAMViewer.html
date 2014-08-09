@@ -49,9 +49,10 @@ window.onload = function() {
      			//entry  : "chr_1",
      			//start  : 1, 
      			//end    : 500
+          height: "400px",
           info_panel: "footer"
         }); 
-
+/*
  var instance2 = new Biojs.BAMViewer({
   target : "bam_viewer_2",
   selectionBackgroundColor : '#99FF00',
@@ -67,7 +68,7 @@ window.onload = function() {
           info_panel: "footer"
         }); 
 
-
+*/
  var region_list = new Biojs.BAMRegionList({
   target : "bam_list",
   selectionBackgroundColor : 'gray',
@@ -104,16 +105,16 @@ var region_selector = new Biojs.BAMRegionSelector({
         //Notify the list of changes in region. 
         //http://localhost:4567/test_chr.fasta/testu/alignment?region=chr_1:1-100
         region_list.add_region_callback(instance);
-        region_list.add_region_callback(instance2);
+        //region_list.add_region_callback(instance2);
         region_list.add_region_callback(wig_select_container);
         region_list.add_region_callback(region_selector);
 
         //connecting the slider with the VIEWER
         instance.add_selected_change_callback(region_selector);
-        instance2.add_selected_change_callback(region_selector);
+       // instance2.add_selected_change_callback(region_selector);
 
         region_selector.add_center_callback(instance);
-        region_selector.add_center_callback(instance2);
+        //region_selector.add_center_callback(instance2);
       };
       </script>
 
@@ -131,9 +132,9 @@ var region_selector = new Biojs.BAMRegionSelector({
             </div>
             <div id="spacer_fix_me" style="height:100px;width:80%;float:right"></div>
             <div id="selected_region" style="height:80px;width:80%;float:right"></div>
-            <div id="bam_viewer_1" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:30%;float:right">
+            <div id="bam_viewer_1" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:60%;float:right">
               BAM goes here</div>
-              <div id="bam_viewer_2" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:30%;float:right">
+              <div id="bam_viewer_2" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:10%;float:right">
               BAM goes here</div>
               <div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
                 BioJS BAMViewer.</div>

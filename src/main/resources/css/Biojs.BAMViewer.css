@@ -1,30 +1,36 @@
 .bam_base {
    float: left !important;
+   height:100%;
 }
 
 .bam_base_A {
    background-color:#FFFF66 ;
+   height:100%;
 }
 
 
 .bam_base_C {
    background-color:#47D147;
    color: black;
+   height:100%;
 }
 
 .bam_base_G {
    background-color:#3399FF;
    color: black;
+   height:100%;
 }
 
 .bam_base_T {
    background-color:#FF704D;
    color: black;
+   height:100%;
 }
 
 .bam_base_N {
    background-color:black;
    color: white;
+   height:100%;
 }
 
 .bam_base_I{
@@ -34,6 +40,7 @@
    border-style:solid;
    border-color:red;
    border-width: 1px;
+
 }
 
 .bam_base_D{
@@ -54,9 +61,15 @@
 
  .bam_forward {
    text-transform:uppercase;
+   -moz-user-select:'none';
+   -webkit-user-select:'none';
+   user-select:'none'
  }
  .bam_reverse {
    text-transform:lowercase;
+  -moz-user-select:'none';
+  -webkit-user-select:'none';
+  user-select:'none'
  }
 
  .bam_container{
