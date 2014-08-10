@@ -48,11 +48,25 @@
    color: black;
 }
 
+.bam_duplicate{
+  text-decoration:line-through;
+}
 .bam_forward {
    text-transform:uppercase;
 }
 .bam_reverse {
    text-transform:lowercase;
+}
+
+.bam_second{
+   border-style:solid;
+   border-color:black;
+   border-width: 1px;
+}
+.bam_first {
+   border-style:dashed;
+   border-color:black;
+   border-width: 1px;
 }
 
 .bam_base {
@@ -61,12 +75,14 @@
 
  .bam_forward {
    text-transform:uppercase;
+   text-align:center;
    -moz-user-select:'none';
    -webkit-user-select:'none';
    user-select:'none'
  }
  .bam_reverse {
    text-transform:lowercase;
+   text-align:center;
   -moz-user-select:'none';
   -webkit-user-select:'none';
   user-select:'none'

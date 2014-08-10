@@ -231,23 +231,71 @@
       seq   : sequence,
       qual  : currentline[10] ,
       duplicates : 1,
-      len   : 100,   
+      full_id: function(){
+        var id = this.qname;
+        if(this.first_in_pair()){
+          id += "/1";
+        }
+        if(this.second_in_pair()){
+          id += "/2"
+        }
+        return id;
+      },
+      len   : 100,  
+
+    /*     1 @is_paired  = (@flag & 0x0001) > 0
+           2 @is_mapped             = @flag & 0x0002 > 0
+           4 @query_unmapped        = @flag & 0x0004 > 0
+           8 @mate_unmapped         = @flag & 0x0008 > 0
+          16 @query_strand          = !(@flag & 0x0010 > 0)
+          32 @mate_strand           = !(@flag & 0x0020 > 0)
+          64 @first_in_pair         = @flag & 0x0040 > 0
+         128 @second_in_pair        = @flag & 0x0080 > 0
+         256 @primary               = !(@flag & 0x0100 > 0)
+         512 @failed_quality        = @flag & 0x0200 > 0
+        1024 @is_duplicate          = @flag & 0x0400 > 0*/ 
       has_flag : function (f){ 
         f = parseInt(f);
         return (this.flags & f) == f ;
       },
-      forward: function(){return  this.has_flag(16);},
+      forward:   function(){return this.has_flag(16);},
+      is_paired: function(){return this.has_flag(1);},
+      is_mapped: function(){return this.has_flag(2);},
+      query_unmapped: function(){return this.has_flag(4);}, 
+      mate_unmapped: function(){return this.has_flag(8);}, 
+      forward:   function(){return this.has_flag(16);},
+      reverse:   function(){return !this.has_flag(16);},
+      mate_forward:   function(){return this.has_flag(32);},
+      mate_reverse:   function(){return !this.has_flag(32);},
+      first_in_pair: function(){return this.has_flag(64);},
+      second_in_pair: function(){return this.has_flag(128);}, 
+      primary: function(){return !this.has_flag(256);},
+      failed_quality: function(){return this.has_flag(512);},
+      is_duplicate: function(){return this.has_flag(1024);},
+
       build_div: function(){
         var new_div = document.createElement("div");
-        new_div.style.height = (parseInt( container.opt.fontSize) * this.duplicates)  + "px";
+        new_div.style.height = (parseInt( container.opt.fontSize) + 3)  + "px";
         new_div.style.position = "absolute";
         n_pos = ( this.pos - 1) * container.opt.base_width;
         new_div.style.left = n_pos + "px";
-        new_div.id = this.qname;
+        
+        new_div.id = this.full_id();
         if(this.forward()){
           new_div.classList.add("bam_forward");
         }else{
           new_div.classList.add("bam_reverse");
+        }
+
+        if(this.first_in_pair()){
+          new_div.classList.add("bam_first");
+        }
+        if(this.second_in_pair()){
+          new_div.classList.add("bam_second");
+        }
+
+        if(this.is_duplicate()){
+          new_div.classList.add("bam_duplicate");
         }
 
         var cigars = this.cigar.replace(/([SIXMND])/g, ":$1,");
@@ -269,7 +317,6 @@
             cig_end = i + length;
             cig_index +=1
             changed = false;
-
           }
           if(key == "M" || key == "X" || key == "="){
             display_base = this.seq[i];
@@ -279,11 +326,9 @@
             current_base_span.style.width = container.opt.base_width + "px";
             current_base_span.style.cssFloat = "left";
             current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
-
             last_div = current_base_span;
             current_base_span.title = this.len + this.pos;
             this.len += 1;
-
           }else if(key == "I"){
             last_div.classList.add("bam_base_I");
             changed = true;
@@ -304,27 +349,16 @@
            }
            changed = true;
                   //cig_index += 1;
-                  i--;
-                }
-              }
-              new_div.style.width = container.opt.base_width * this.len + "px"; 
-              this.div = new_div;
+           i--;
+          }
+        }
+        new_div.style.width = container.opt.base_width * this.len + "px"; 
+        this.div = new_div;
  //             console.log("new_div len:" + len);
-              return new_div;
-            }};
+        return new_div;
+        }};
 
 
-    /* @is_paired  = (@flag & 0x0001) > 0
-        @is_mapped             = @flag & 0x0002 > 0
-        @query_unmapped        = @flag & 0x0004 > 0
-        @mate_unmapped         = @flag & 0x0008 > 0
-        @query_strand          = !(@flag & 0x0010 > 0)
-        @mate_strand           = !(@flag & 0x0020 > 0)
-        @first_in_pair         = @flag & 0x0040 > 0
-        @second_in_pair        = @flag & 0x0080 > 0
-        @primary               = !(@flag & 0x0100 > 0)
-        @failed_quality        = @flag & 0x0200 > 0
-        @is_duplicate          = @flag & 0x0400 > 0*/
 
         for(var j=12;j < currentline.length;j++){
           var tag = sam_line[j].split(":")
@@ -358,10 +392,10 @@
     },
 
     fill_canvas_aux: function(aln , arr, offset, index){
-      var dups = aln.duplicates;
-      console.log ("Filling duplicates: " + dups);  
-      for(var j = 0; j < dups; j++){
-        var local_index = index + j;
+      //var dups = aln.duplicates;
+      //console.log ("Filling duplicates: " + dups);  
+      //for(var j = 0; j < dups; j++){
+        var local_index = index ;
         if("undefined" === typeof arr[local_index] ){
           var region_rend = this.rendered_region;
           var size  = region_rend.end - region_rend.start;
@@ -369,11 +403,11 @@
         }
         var start = aln.pos - offset;
         var end = start + aln.len;
-         console.log("filling canvas: " + start +"-" + end + " @ " + local_index);
+        // console.log("filling canvas: " + start +"-" + end + " @ " + local_index);
         for(var i=start;i<end;i++){
          arr[local_index][i] ++;  
         }
-      }
+      //}
 
 
     },
@@ -382,7 +416,7 @@
       var start = aln.pos - offset;
       var arr_size = arr.length;
       var i = 0; 
-      var dups = aln.duplicates;
+     //var dups = aln.duplicates;
       
       var found = false
       var out = 0;
@@ -391,12 +425,12 @@
           found = true;
           out = i;
 
-          for(var j = 0; j < dups; j++){
+          /*for(var j = 0; j < dups; j++){
             var local_index = i + j;
             if("undefined" != typeof arr[local_index]  && arr[local_index][start] != 0 ){
               found = false;
             }
-          }
+          }*/
           
           if(found){
             return i;
@@ -443,7 +477,7 @@
             aln.div.style.left = n_pos + "px";
             var l_off = i - start;
             var start_index = this.find_empty_start(aln, rendered_positions, start);
-            var new_pos = start_index * parseInt(this.opt.fontSize);
+            var new_pos = start_index * (4+parseInt(this.opt.fontSize) );
             aln.div.style.top =  new_pos + "px"; 
             this.fill_canvas_aux(aln, rendered_positions, start, start_index);
             canvas.appendChild(aln.div);
@@ -464,8 +498,10 @@
       var seqs = this.sequences;
       var added = 0;
       var duplicates = 0;
+      var unaligned = 0;
       for(var i = 0; i < alignments.length; i++){
         var aln = alignments[i];
+        var add = true;
         if("undefined" === typeof als[aln.pos]){
           als[aln.pos] = {}; 
         }
@@ -473,32 +509,24 @@
           seqs[aln.pos] = {}; 
         }
         var current_alignments = als[aln.pos]; 
-        if("undefined" ===  typeof als[aln.pos][aln.qname]){
-          //added ++;
-          //als[aln.pos][aln.qname] = aln;
-          var aln_pos_hash = als[aln.pos];
-          var seq_pos_hash = seqs[aln.pos];
-          var add = false;
-          if("undefined" ===  typeof seq_pos_hash[aln.seq] ){
-            add = true;
-          }
-          
-          if(add){
-            added ++;
-            als[aln.pos][aln.qname] = aln;
-            seqs[aln.pos][aln.seq] = aln;
-          }else{
-            duplicates ++;
-            seqs[aln.pos][aln.seq].duplicates ++;
-          }
 
-          //TODO add a counter of how many are repeated!. */
-          //alert(JSON.stringify( current_alignments[aln.qname] ));
+        if("undefined" !==  typeof als[aln.pos][aln.full_id()]){
+          add = false;
+        }
+        if(!aln.is_mapped()){
+          add = false;
+          unaligned ++;
+        }
+
+
+        if(add){
+          var aln_pos_hash = als[aln.pos];   
+          added ++;
+          als[aln.pos][aln.full_id()] = aln;
+          
         }
       }
-
-      console.log("[add_alignments]: Added: " + added + "PCR duplicate: " + duplicates);
-        //alert(JSON.stringify( this.alignments ));
+      console.log("[add_alignments] Unmapped: " + unaligned);
       },
 
       get_overlapping_region: function(region){
