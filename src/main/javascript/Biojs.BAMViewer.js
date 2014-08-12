@@ -741,7 +741,8 @@ _select_chromosome: function(full_region){
   outter_div.style.width = this.opt.width;
 
   outter_div.style.position = "absolute";
-  outter_div.style.overflow = "hidden";
+  outter_div.style.overflowX = "hidden";
+  outter_div.style.overflowY = "scroll";
   outter_div.style.height = this.opt.height;
   var new_div = document.createElement("div");
   new_div.classList.add("ui-widget-content");
