@@ -49,7 +49,7 @@ window.onload = function() {
      			//entry  : "chr_1",
      			//start  : 1, 
      			//end    : 500
-          height: "200px",
+          height: "150px",
           info_panel: "footer", 
           display_orientation: true,
           fontSize: "2px",
@@ -67,10 +67,28 @@ window.onload = function() {
           //entry  : "chr_1",
           //start  : 1, 
           //end    : 500
-          height: "200px",
+          height: "150px",
           info_panel: "footer",
           fontSize: "2px",
           display_bases: true
+        }); 
+
+ var instance3 = new Biojs.BAMViewer({
+  target : "bam_viewer_3",
+  selectionBackgroundColor : '#99FF00',
+          //dataSet: "http://localhost:4567/test_chr.fasta/testu/alignment", 
+          //reference: "http://localhost:4567/test_chr.fasta/testu/reference",
+          dataSet:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/alignment", 
+          reference:"http://localhost:4567/test_reference.fa/Sample_LIB1715.uniq/reference",
+          base_width: bw,
+          flanking_cache: flanking_cache ,          //bam: "http://localhost:4567/test_chr.fasta/testu/alignment",
+          //entry  : "chr_1",
+          //start  : 1, 
+          //end    : 500
+          height: "150px",
+          info_panel: "footer",
+          fontSize: "2px",
+          display_mates: true
         }); 
 
 
@@ -111,15 +129,18 @@ var region_selector = new Biojs.BAMRegionSelector({
         //http://localhost:4567/test_chr.fasta/testu/alignment?region=chr_1:1-100
         region_list.add_region_callback(instance);
         region_list.add_region_callback(instance2);
+        region_list.add_region_callback(instance3);
         region_list.add_region_callback(wig_select_container);
         region_list.add_region_callback(region_selector);
 
         //connecting the slider with the VIEWER
         instance.add_selected_change_callback(region_selector);
         instance2.add_selected_change_callback(region_selector);
+        instance3.add_selected_change_callback(region_selector);
 
         region_selector.add_center_callback(instance);
         region_selector.add_center_callback(instance2);
+        region_selector.add_center_callback(instance3);
       };
       </script>
 
@@ -139,9 +160,11 @@ var region_selector = new Biojs.BAMRegionSelector({
             <div id="selected_region" style="height:80px;width:80%;float:right"></div>
             <div id="bam_viewer_1" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:60%;float:right">
               BAM goes here</div>
-              <div id="bam_viewer_2" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:10%;float:right">
+            <div id="bam_viewer_2" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:10%;float:right">
               BAM goes here</div>
-              <div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
+            <div id="bam_viewer_3" style="background-color:#EEEEEE;width:80%;overflow:hidden; height:10%;float:right">
+              BAM goes here</div>
+            <div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
                 BioJS BAMViewer.</div>
 
               </div>

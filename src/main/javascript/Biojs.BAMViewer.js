@@ -393,7 +393,7 @@
         new_div.id = this.full_id();
         
         this._display_orientation(new_div);
-
+        this._display_mates(new_div);
        
         //TODO: make a function that displays or not depending a preference to display duplicates
         if(this.is_duplicate()){
