@@ -1,6 +1,9 @@
 .bam_base {
    float: left !important;
    height:100%;
+   text-align: center;
+  vertical-align: middle;
+
 }
 
 .bam_base_A {
@@ -31,6 +34,8 @@
    background-color:black;
    color: white;
    height:100%;
+   text-align: center;
+  vertical-align: middle;
 }
 
 .bam_base_I{
@@ -41,6 +46,11 @@
    border-color:red;
    border-width: 1px;
 
+}
+
+.bam_tag{
+  text-align: center;
+  vertical-align: middle;
 }
 
 .bam_base_D{
@@ -106,4 +116,10 @@
 .bam_info_panel{
   background-color: black;
   color: white;
+}
+
+.bam_selector_text{
+  border:0; 
+  color:#f6931f; 
+  font-weight:bold;
 }

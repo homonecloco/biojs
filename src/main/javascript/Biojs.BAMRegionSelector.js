@@ -86,7 +86,8 @@ Biojs.BAMRegionSelector = Biojs.extend (
      selectionFontColor: "blak",
      selectionBackgroundColor: "gray",
      width: "80%",
-     height: "100px"
+     height: "100px",
+     initial_zoom: 2
   },
   
   /**
@@ -164,6 +165,13 @@ Biojs.BAMRegionSelector = Biojs.extend (
        this.center_callbacks[i].set_central_base(val);
      }
   },
+  set_size: function(){
+    var val = this.position_value_zoom.val();
+     for (var i = this.center_callbacks.length - 1; i >= 0; i--) {
+       this.center_callbacks[i].set_size(val);
+     }
+     this.center();
+   },
 
   add_center_callback: function(component){
     this.center_callbacks.push(component);
@@ -173,15 +181,24 @@ Biojs.BAMRegionSelector = Biojs.extend (
   _render_scroll: function(){
     this.slider_id =  this.opt.target + "_slider";
     this.slider_pos = this.opt.target + "_position";
+    this.slider_id_zoom =  this.opt.target + "_slider_zoom";
+    this.slider_pos_zoom = this.opt.target + "_position_zoom";
     self = this;
     var blank_html = "\
-    <p>\
-    <label for=\"" + this.slider_pos + "\">Centered in:</label>\
-    <input type=\"text\" id=\"" + this.slider_pos + "\" style=\"border:0; color:#f6931f; font-weight:bold;\">  \
-    <div id=\"" + this.slider_id + "\" style=width:"+this.opt.width+";height:20px\"></div> </p>";
+    <div style=\"width:"+this.opt.width + "\">\
+    <div style=\"width:70%\">\
+    <label for=\"" + this.slider_pos + "\">Position:</label>\
+    <input type=\"text\" id=\"" + this.slider_pos + "\" class=\"bam_selector_text\">  \
+    <div id=\"" + this.slider_id + "\" style=width:100%;height:20px\"></div>\
+    <div style=\"width:30%\">\
+    <label for=\"" + this.slider_pos_zoom + "\">Size:</label>\
+    <input type=\"text\" id=\"" + this.slider_pos_zoom + "\" class=\"bam_selector_text\">  \
+    <div id=\"" + this.slider_id_zoom + "\" style=width:100%;height:20px\"></div>\
+    </div> ";
     this._container.html(blank_html)  ;
     var sp =  this.slider_pos;
-    console.log("Using widht: " + this.opt.width);
+
+//Region scroll
     this.slider_div  = jQuery("#"+this.slider_id)
 
     this.slider_div.slider({
@@ -207,6 +224,37 @@ Biojs.BAMRegionSelector = Biojs.extend (
       if(event.keycode == "13"){
         self.slider_div.slider( "value", this.value);
         self.center();
+      }
+    });
+
+    //Zoom scroll
+
+    this.slider_div_zoom  = jQuery("#"+this.slider_id_zoom )
+    var spz = this.slider_pos_zoom;
+    var initial_size = this.opt.initial_zoom;
+    this.slider_div_zoom.slider({
+      orientation: "horizontal",
+      min: 1,
+      max: 25,
+      value: initial_size,
+      slide: function( event, ui ) {
+        pos_div = jQuery( "#" + spz);
+        pos_div.val( ui.value );
+      }, 
+      stop: function(event, ui){
+        self.set_size();
+      }
+    });
+    this.position_value_zoom = $( "#" + this.slider_pos_zoom );
+    this.position_value_zoom.val( $( "#" + this.slider_id_zoom ).slider( "value" ) );
+    this.position_value_zoom.change(function() {
+      self.slider_div_zoom.slider( "value", this.value);
+      self.center();
+    });
+    this.position_value_zoom.keypress(function( event ) {
+      if(event.keycode == "13"){
+        self.slider_div_zoom.slider( "value", this.value);
+        self.set_size();
       }
     });
   }

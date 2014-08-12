@@ -80,7 +80,7 @@
 
     // Set the content
     this._container.append('<div>Please select a region</div>');
-
+    this.force = false;
     
     //Here starts the real SAM stuff. 
     this.dataSet = options.dataSet
@@ -159,9 +159,13 @@
    * @example 
    * instance.setSize("72px");
    */
-   setSize: function(size) {
+   set_size: function(size) {
+
     if ( size != undefined ){
-      jQuery("#"+this.opt.target).css('font-size', size);
+      this.opt.base_width = parseInt(size);
+      this._invalidate_rendered_divs();
+      this.force = true;
+
     }
   },
   
@@ -216,7 +220,7 @@
     var currentline = sam_line.split("\t");
 
     var cigar = currentline[5] 
-    container = this;
+    var container = this;
     //console.log("Parsing flagg:" +  parseInt(currentline[1],10));
 
     var sequence = currentline[9] ;
@@ -236,7 +240,8 @@
       qual  : currentline[10] ,
       duplicates : 1,
       full_id: function(){
-        var id = this.qname;
+        var id =container.opt.target; 
+        id += "_" + this.qname;
         if(this.first_in_pair()){
           id += "/1";
         }
@@ -319,6 +324,7 @@
           var current_base_span = document.createElement("div");
           new_div.appendChild(current_base_span);
           current_base_span.className = "bam_base_" + display_base;
+          current_base_span.classList.add = "bam_base";
           current_base_span.style.width = container.opt.base_width + "px";
           current_base_span.style.cssFloat = "left";
           current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
@@ -386,6 +392,8 @@
       build_div: function(){
         var new_div = document.createElement("div");
         new_div.style.height = (parseInt( container.opt.base_width) + 3)  + "px";
+        new_div.style.fontSize =  container.opt.base_width + "px";
+        new_div.classList.add("bam_tag");
         new_div.style.position = "absolute";
         n_pos = ( this.pos - 1) * container.opt.base_width;
         new_div.style.left = n_pos + "px";
@@ -527,7 +535,7 @@
               aln.build_div(canvas);
             }
             var base_offset = aln.pos - this._render_div.left_offset - 1;
-            var n_pos = ( base_offset) * container.opt.base_width; 
+            var n_pos = ( base_offset) * this.opt.base_width; 
             aln.div.style.left = n_pos + "px";
             var l_off = i - start;
             var start_index = this.find_empty_start(aln, rendered_positions, start);
@@ -667,7 +675,7 @@ _make_div_draggable: function(new_div){
   jQuery(new_div).draggable({
     grid: [ 20, grid_w ] ,
     scroll: true, 
-    
+    axis: "x", 
     start: function() {
       start_pos = parseInt(new_div.style.left);
     },
@@ -709,6 +717,20 @@ _make_div_draggable: function(new_div){
     });
    new_div.bam_container = this;
 },
+
+
+_invalidate_rendered_divs: function(){
+  for (var key in this.alignments){
+    //console.log("[_invalidate_rendered_divs]" + key);
+    var current = this.alignments[key];
+    //console.log(current);
+    for (var i in current) {
+      //console.log(current[i].div);
+      current[i].div = undefined;
+    };
+  }
+},
+
 _select_chromosome: function(full_region){
   this._container.empty();
   this.alignments = {};
@@ -747,7 +769,7 @@ this.visible_region.end = parseInt(visible_bases);
 
 //SETTING UP THE BOTTOM THING
 var info_div = document.createElement("div");
-info_div.style.width - this.opt.base_width;
+//info_div.style.width - this.opt.base_width;
 info_div.classList.add("bam_info_panel");
 info_div.appendChild(info_div.ownerDocument.createTextNode("Visible: " +  this.visible_region.toString()));
 
@@ -762,6 +784,7 @@ if(outer_info != null){
 visible_bases: function(){
   var computedStyle = getComputedStyle(this._render_div, null);
   var visible_bases = Math.round(parseInt(computedStyle.width) / this.opt.base_width);
+  console.log("[visible_bases] how many?!" + visible_bases + "Base width: " + this.opt.base_width + " render_width: " + computedStyle.width) ;
   return visible_bases;
 },
 
@@ -791,9 +814,10 @@ set_central_base: function(position){
   //info_div.removeChild(info_div.lastChild);
   //info_div.appendChild(info_div.ownerDocument.createTextNode("Visible: " +  self.visible_region.toString()));
 
-  if(!this.rendered_region.subset(new_region) ){
+  if(!this.rendered_region.subset(new_region)){
     this.visible_region = new_region;
     this.load_region(this.visible_region);
+ 
   }else{
     var mid =this.visible_middle() ;
     console.log("Moving: " + mid + " to " + pos);
@@ -805,6 +829,12 @@ set_central_base: function(position){
     this.move_rendered_div(drag_offset_bases);
     console.log(this.visible_region.toString());
 
+  }
+
+  if(this.force){
+    this.visible_region = new_region;
+    this.load_region(this.visible_region);
+    this.force = false;
   }
 
 },
