@@ -66,7 +66,7 @@
     this._container.css({
       'font-family': self.opt.fontFamily, // this is one example of the use of self instead of this
 
-      'font-size': self.opt.fontSize,
+      'font-size': self.opt.base_width + "px",
       'text-align': 'center',
       'vertical-align':'top',
       'display': 'table-cell',
@@ -114,13 +114,17 @@
     selectionFontColor: "black",
     selectionBackgroundColor: "yellow",
     dataSet: "../../main/resources/data/BAMViwerDataSet.tsv", 
-    fontSize: "15px",
+   // fontSize: "15px",
     width: "80%",
     height: "200px",
     float_bam: "right",
     new_pos: 10,
     default_read_background:"blue", 
-    flanking_size: 300
+    flanking_size: 300,
+    display_bases: false,
+    display_orientation: false, 
+    display_cigar:false,
+    display_mates: false
   },
   
   /**
@@ -272,32 +276,65 @@
       primary: function(){return !this.has_flag(256);},
       failed_quality: function(){return this.has_flag(512);},
       is_duplicate: function(){return this.has_flag(1024);},
+      /* display_bases: false,
+    display_orientation: false, 
+    display_cigar:false,
+    display_mate_missing: false*/
+      
+      _display_orientation: function(new_div){
+        if(container.opt.display_orientation){
+          if(this.forward()){
+            new_div.classList.add("bam_forward");
+          }else{
+            new_div.classList.add("bam_reverse");
+          }
+        }
+      }, 
 
-      build_div: function(){
-        var new_div = document.createElement("div");
-        new_div.style.height = (parseInt( container.opt.fontSize) + 3)  + "px";
-        new_div.style.position = "absolute";
-        n_pos = ( this.pos - 1) * container.opt.base_width;
-        new_div.style.left = n_pos + "px";
+      _display_mates: function(new_div){
+        if(container.opt.display_mates){
+          if(this.first_in_pair()){
+            new_div.classList.add("bam_first");
+          }
+          if(this.second_in_pair()){
+            new_div.classList.add("bam_second");
+          }
+          if(this.mate_unmapped){
+            new_div.classList.add("bam_mate_missing");
+          }
+        }
+      },
+
+      _draw_seq: function(new_div){
         
-        new_div.id = this.full_id();
-        if(this.forward()){
-          new_div.classList.add("bam_forward");
-        }else{
-          new_div.classList.add("bam_reverse");
+        var seq_len = this.parsed_seq.length;
+        var next_insertion = -1;
+        var index_insertion = 0;
+        if(this.insertions.size > 0){
+          next_insertion = this.insertions[0];
         }
+       
+        for (var i = 0; i < seq_len; i++) {
+          display_base = this.parsed_seq[i];
+          var current_base_span = document.createElement("div");
+          new_div.appendChild(current_base_span);
+          current_base_span.className = "bam_base_" + display_base;
+          current_base_span.style.width = container.opt.base_width + "px";
+          current_base_span.style.cssFloat = "left";
+          current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
+          last_div = current_base_span;
+          current_base_span.title = this.pos + i;
 
-        if(this.first_in_pair()){
-          new_div.classList.add("bam_first");
-        }
-        if(this.second_in_pair()){
-          new_div.classList.add("bam_second");
-        }
+          if(next_insertion == i ){
+            last_div.classList.add("bam_base_I");
+            next_insertion = this.insertions[index_insertion++];
+          }
 
-        if(this.is_duplicate()){
-          new_div.classList.add("bam_duplicate");
-        }
+        };
 
+      },
+
+      _parse_cigar: function(){
         var cigars = this.cigar.replace(/([SIXMND])/g, ":$1,");
         var cigars_array = cigars.split(',');
         var cig_index = 0;
@@ -308,7 +345,10 @@
         var length;
         var cig_index = 0;
         var last_div;
+        var parsed_seq = "";
+        var insertions = [];
         changed = true;
+
         for ( var i = 0; i < this.seq.length; i++ ){
           if(i > cig_end || changed == true){
             cig = cigars_array[cig_index].split(":"); 
@@ -318,43 +358,57 @@
             cig_index +=1
             changed = false;
           }
+
           if(key == "M" || key == "X" || key == "="){
-            display_base = this.seq[i];
-            var current_base_span = document.createElement("div");
-            new_div.appendChild(current_base_span);
-            current_base_span.className = "bam_base_" + display_base;
-            current_base_span.style.width = container.opt.base_width + "px";
-            current_base_span.style.cssFloat = "left";
-            current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
-            last_div = current_base_span;
-            current_base_span.title = this.len + this.pos;
+            parsed_seq += this.seq[i];
             this.len += 1;
           }else if(key == "I"){
-            last_div.classList.add("bam_base_I");
+            insertions.push(i);
             changed = true;
           }else if(key == "D" || key == "N"){
             for (var j  = 0; j < length; j ++ ) {
-             display_base =  "*";
-             var current_base_span = document.createElement("div");
-             current_base_span.classList.add("bam_base");
-             current_base_span.classList.add("bam_base_D");
-             current_base_span.style.width = container.opt.base_width + "px";
-             current_base_span.style.cssFloat = "left";
-             current_base_span.appendChild(current_base_span.ownerDocument.createTextNode(display_base));
-             last_div = current_base_span;
-             current_base_span.title = this.len + this.pos;
-             new_div.appendChild(current_base_span);
-             this.len += 1;
-             current_base_span.id = this.len;
-           }
-           changed = true;
+              parsed_seq += "*";
+              display_base =  "*";
+             
+            }
+            changed = true;
                   //cig_index += 1;
-           i--;
+            i--;
           }
         }
+        this.len = parsed_seq.length;
+        this.parsed_seq = parsed_seq;
+        this.insertions = insertions;
+      },
+
+
+
+      build_div: function(){
+        var new_div = document.createElement("div");
+        new_div.style.height = (parseInt( container.opt.base_width) + 3)  + "px";
+        new_div.style.position = "absolute";
+        n_pos = ( this.pos - 1) * container.opt.base_width;
+        new_div.style.left = n_pos + "px";
+        
+        new_div.id = this.full_id();
+        
+        this._display_orientation(new_div);
+
+       
+        //TODO: make a function that displays or not depending a preference to display duplicates
+        if(this.is_duplicate()){
+          new_div.classList.add("bam_duplicate");
+        }
+        this._parse_cigar();
+
+        if(container.opt.display_bases){
+          this._draw_seq(new_div);
+        }
+        
         new_div.style.width = container.opt.base_width * this.len + "px"; 
         this.div = new_div;
  //             console.log("new_div len:" + len);
+
         return new_div;
         }};
 
@@ -477,7 +531,7 @@
             aln.div.style.left = n_pos + "px";
             var l_off = i - start;
             var start_index = this.find_empty_start(aln, rendered_positions, start);
-            var new_pos = start_index * (4+parseInt(this.opt.fontSize) );
+            var new_pos = start_index * (4+parseInt(this.opt.base_width) );
             aln.div.style.top =  new_pos + "px"; 
             this.fill_canvas_aux(aln, rendered_positions, start, start_index);
             canvas.appendChild(aln.div);

@@ -53,20 +53,30 @@
 }
 .bam_forward {
    text-transform:uppercase;
+   background-color: green;
 }
 .bam_reverse {
    text-transform:lowercase;
+   background-color: blue;
+}
+
+.bam_mate_missing{
+  barder-style:solid;
+  border-color: red;
+  border-width: 2px;
 }
 
 .bam_second{
    border-style:solid;
    border-color:black;
    border-width: 1px;
+   background-color: red;
 }
 .bam_first {
    border-style:dashed;
    border-color:black;
    border-width: 1px;
+   background-color: gray;
 }
 
 .bam_base {
