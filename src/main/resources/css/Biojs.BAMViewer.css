@@ -123,3 +123,15 @@
   color:#f6931f; 
   font-weight:bold;
 }
+
+.bam_loading{
+    filter:alpha(opacity=50); 
+    opacity:0.5;
+}
+
+.bam_container{
+   box-sizing:border-box;
+  border-style:solid;
+  border-color:black;
+  border-width: 1px;
+}

@@ -72,7 +72,6 @@
       'display': 'table-cell',
       'width': self.opt.width,
       'height': self.opt.height,
-      'float' : self.opt.float_bam, 
       'overflow': 'auto'    
     });
 
@@ -81,7 +80,7 @@
     // Set the content
     this._container.append('<div>Please select a region</div>');
     this.force = false;
-    
+    this._container.addClass( "bam_container");
     //Here starts the real SAM stuff. 
     this.dataSet = options.dataSet
     this.reference = options.reference;
@@ -504,8 +503,9 @@
       return i;
     },
 
-    render_visible: function(){
 
+    render_visible: function(){
+      this.enable_loading();
       var region = this.visible_region.expand_flanking_region(this.opt.flanking_size);;
       this.rendered_region = region;
       
@@ -550,8 +550,25 @@
       parent.removeChild(this._render_div);
       parent.appendChild(canvas);
       this._render_div = canvas;
+      this.disable_loading();
 
+    },
 
+    enable_loading: function(){
+      var target = this._container;
+      console.log(target);
+      if("undefined" !== target){
+         target.addClass("bam_loading");
+      }
+     
+    }, 
+
+    disable_loading: function(){
+      var target = this._container;
+       if("undefined" !== target){
+         target.removeClass("bam_loading");
+       }
+     
     },
 
 
@@ -642,7 +659,8 @@
     var  reg = added_reg.toString();   
 
     //console.log("Loading: " + reg);
-
+   var container = this;
+   container.enable_loading();
   //http://localhost:4567/region?bam=testu&region=chr_1:1-400&ref=test_chr.fasta 
   jQuery.ajax({
     type: "GET",
@@ -659,12 +677,14 @@
       } else {
         alert("Unknown format detected");
       }
+      container.disable_loading();
       this.container.render_visible();
      //this.container._move_to_top();
 
     },
     error: function (qXHR, textStatus, errorThrown) {
       alert(" Error loading the  SAM File! \n" + textStatus + "\n" + errorThrown + "\n" + qXHR );
+      container.disable_loading();
     }
   });
 },
