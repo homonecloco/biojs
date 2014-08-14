@@ -197,7 +197,7 @@
     //return JSON.stringify(result); //JSON
   },
 
-  /** 
+  /** 9
   * Parses a line from the SAM specification as follows:  
   *  1 QNAME String
   *  2 FLAG Int
@@ -485,14 +485,6 @@
         if(arr[i][start] == 0 ){
           found = true;
           out = i;
-
-          /*for(var j = 0; j < dups; j++){
-            var local_index = i + j;
-            if("undefined" != typeof arr[local_index]  && arr[local_index][start] != 0 ){
-              found = false;
-            }
-          }*/
-          
           if(found){
             return i;
           }
@@ -516,8 +508,11 @@
       var rendered_positions =  [];
       this._render_div.left_offset = this.visible_region.start;
       
-      var canvas = this._render_div.cloneNode();
+   //   var canvas = this._render_div.cloneNode();
+      canvas = this._render_div;
+      canvas.innerHTML = "";
       canvas.style.left = "0px";
+
       var parent = this._render_div.parentNode;
       if(start < 0){
         start = 1;
@@ -547,9 +542,9 @@
         }
       }
       this._make_div_draggable(canvas);
-      parent.removeChild(this._render_div);
-      parent.appendChild(canvas);
-      this._render_div = canvas;
+     // parent.removeChild(this._render_div);
+      //parent.appendChild(canvas);
+      //this._render_div = canvas;
       this.disable_loading();
 
     },
@@ -751,12 +746,16 @@ _invalidate_rendered_divs: function(){
   }
 },
 
-_select_chromosome: function(full_region){
-  this._container.empty();
-  this.alignments = {};
-  this.loaded_regions =  new Array();
-  this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
+_create_control_div: function(outer_div){
+  var settings_div = document.createElement("div");
 
+  settings_div.className = "bam_settings_button";
+  settings_div.innerHTML ="Settings";
+  this._container.append(settings_div); 
+
+},
+
+_create_render_div: function(){
   var outter_div = document.createElement("div");
   outter_div.style.width = this.opt.width;
 
@@ -774,10 +773,19 @@ _select_chromosome: function(full_region){
   
   this._make_div_draggable(new_div);
 
-new_div.left_offset = 0;
-this._render_div = new_div;    
-outter_div.appendChild(new_div);
-this._container.append(outter_div);  
+   new_div.left_offset = 0;
+   this._render_div = new_div;    
+   outter_div.appendChild(new_div);
+   this._container.append(outter_div); 
+},
+
+_select_chromosome: function(full_region){
+  this._container.empty();
+  this.alignments = {};
+  this.loaded_regions =  new Array();
+  this.full_region = this.parse_region(full_region); //New object, to avoid modifying the current region unintentionally.
+  this._create_render_div();
+  this._create_control_div();   
 
 
 var visible_bases = this.visible_bases();
@@ -816,14 +824,21 @@ move_rendered_div: function(offset){
 
 set_central_base: function(position){
   var pos = parseInt(position);
-  console.log("Centering: "  + this.opt.target + ":" + position);
-  console.log("Full_region: " + JSON.stringify(this.full_region));
+  var visible_bases = this.visible_bases();
+  var half_bases = visible_bases / 2;
+  if(pos > this.full_region.end - half_bases ){
+      pos = this.full_region.end - half_bases;
+  }
+  if(pos <= half_bases ){
+     pos = half_bases;
+  }
+
   if(! this.full_region.valid_position(pos)){
-    alert("Invalid position!");
+    console.log("Invalid position");
     return;
   }
 
-  var visible_bases = this.visible_bases();
+  
   var flank_size = Math.round(visible_bases/2);
   new_region = this.visible_region.clone();
   new_region.start = pos - flank_size;

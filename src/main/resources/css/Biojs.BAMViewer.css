@@ -96,23 +96,13 @@
  .bam_forward {
    text-transform:uppercase;
    text-align:center;
-   -moz-user-select:'none';
-   -webkit-user-select:'none';
-   user-select:'none'
+   
  }
  .bam_reverse {
    text-transform:lowercase;
    text-align:center;
-  -moz-user-select:'none';
-  -webkit-user-select:'none';
-  user-select:'none'
  }
 
- .bam_container{
-  -moz-user-select:'none';
-  -webkit-user-select:'none';
-  user-select:'none'
-}
 .bam_info_panel{
   background-color: black;
   color: white;
@@ -130,8 +120,27 @@
 }
 
 .bam_container{
-   box-sizing:border-box;
+  box-sizing:border-box;
   border-style:solid;
   border-color:black;
   border-width: 1px;
+  -moz-user-select:'none';
+   -webkit-user-select:'none';
+   user-select:'none'
+
+}
+
+.bam_settings_button {
+    z-index: 1;
+    position: relative;
+    left: 2px;
+    right: 0;
+    top: 2px;
+
+    height: 10px;
+    width: 10px;
+    background-color: #000;
+    color: white;
+
+    padding: 0;
 }
