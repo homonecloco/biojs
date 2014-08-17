@@ -137,10 +137,11 @@
     right: 0;
     top: 2px;
 
-    height: 10px;
-    width: 10px;
-    background-color: #000;
+    height: 16px;
+    width: 16px;
+    background-color: #fff;
     color: white;
+    background-image:url('images/settings.png');
 
     padding: 0;
 }

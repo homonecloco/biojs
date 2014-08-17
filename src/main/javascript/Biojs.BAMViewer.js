@@ -440,7 +440,7 @@
       this.visible_change_callbacks.push(component)
     },
     _selected_change: function(region){
-      arrayLength= this.visible_change_callbacks.length;
+      var arrayLength= this.visible_change_callbacks.length;
       for (var i = 0; i < arrayLength; i++) {
        this.visible_change_callbacks[i].setSelectedRegion(this.visible_region.toString());
       }
@@ -750,8 +750,71 @@ _create_control_div: function(outer_div){
   var settings_div = document.createElement("div");
 
   settings_div.className = "bam_settings_button";
-  settings_div.innerHTML ="Settings";
+  settings_div.innerHTML ="S";
+  var settings_id = this.opt.target + "_settings_window";
+  settings_div.onclick = function(){
+      $( "#"  + settings_id ).dialog( "open" );
+  };
   this._container.append(settings_div); 
+  var settings_alert = document.createElement("div");
+  settings_alert.id = settings_id;
+  settings_alert.title = "Settings";
+
+
+/*<label for=\"" + this.slider_pos + "\">Position:</label>\
+    <input type=\"text\" id=\"" + this.slider_pos + "\" class=\"bam_selector_text\">  \*/
+  var form_html = '\
+    <input type="checkbox" name="display_options" value="display_orientation"> Show orientation<br/>\
+    <input type="checkbox" name="display_options" value="display_bases"> Show bases<br/>\
+    <input type="checkbox" name="display_options" value="display_mates"> Show mates<br/>'
+  settings_alert.innerHTML =  form_html;
+
+  this._container.append(settings_alert);
+  var self = this;
+  var options = this.opt;
+  $("#" + settings_id ).dialog({
+      autoOpen: false,
+      open: function( event, ui ) {
+        var inputs = settings_alert.childNodes;
+        console.log("Inputs: ");
+        for (var i = 0; i < inputs.length; i++) {
+          var el = inputs[i];
+          if(el.type && el.type === 'checkbox'){
+            if(self.opt[el.value]){
+              el.checked = true;
+            }else{
+              el.checked = false;
+            }
+          }
+          
+        };
+      },
+      close: function( event, ui ) {
+        var inputs = settings_alert.childNodes;
+        console.log("Outputs: ");
+        for (var i = 0; i < inputs.length; i++) {
+          var el = inputs[i];
+          if(el.type && el.type === 'checkbox'){
+            self.opt[el.value] = el.checked;
+            console.log(el);
+          }
+         
+
+        };
+        self._invalidate_rendered_divs();
+        self.force = true;
+        self.force_render();
+      },
+      show: {
+        effect: "fadeIn",
+        duration: 400
+
+      },
+      hide: {
+        effect: "fadeOut",
+        duration: 400
+      }
+    });
 
 },
 
@@ -869,10 +932,14 @@ set_central_base: function(position){
 
   if(this.force){
     this.visible_region = new_region;
-    this.load_region(this.visible_region);
-    this.force = false;
+    this.force_render();
+
   }
 
+},
+force_render : function(){
+  this.load_region(this.visible_region);
+  this.force = false;
 },
 
 _move_to_top: function  (){
